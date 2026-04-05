@@ -25,33 +25,31 @@ export default function AdminDashboard() {
   const [links, setLinks] = useState([])
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState({})
+  const [uploadModal, setUploadModal] = useState(null)
+  const [uploadSubject, setUploadSubject] = useState(null)
+  const [uploadFile, setUploadFile] = useState(null)
+  const [uploadTitle, setUploadTitle] = useState('')
+  const [uploadUrl, setUploadUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const token = localStorage.getItem('token')
   const headers = { Authorization: `Bearer ${token}` }
 
-  useEffect(() => {
-    fetchUsers()
-    fetchSubjects()
-  }, [])
+  useEffect(() => { fetchUsers(); fetchSubjects() }, [])
 
   const fetchUsers = async () => {
-    try {
-      const { data } = await axios.get('/api/users', { headers })
-      setUsers(data)
-    } catch (err) { console.log(err) }
+    try { const { data } = await axios.get('/api/users', { headers }); setUsers(data) }
+    catch (err) { console.log(err) }
   }
 
   const fetchSubjects = async () => {
-    try {
-      const { data } = await axios.get('/api/subjects', { headers })
-      setSubjects(data)
-    } catch (err) { console.log(err) }
+    try { const { data } = await axios.get('/api/subjects', { headers }); setSubjects(data) }
+    catch (err) { console.log(err) }
   }
 
   const handleSelect = (id) => {
     if (id === 'signout') { logout(); return }
-    setSection(id)
-    setSidebarOpen(false)
+    setSection(id); setSidebarOpen(false)
   }
 
   const openModal = (type) => { setModal(type); setForm({}) }
@@ -63,34 +61,21 @@ export default function AdminDashboard() {
     const i = subjects.length % 8
     try {
       const { data } = await axios.post('/api/subjects', {
-        name: form.name,
-        code: form.code || '—',
-        credits: form.credits || '3',
-        year: form.year || 'Year 1',
-        icon: icons[i],
-        color: colors[i]
+        name: form.name, code: form.code || '—', credits: form.credits || '3',
+        year: form.year || 'Year 1', icon: icons[i], color: colors[i]
       }, { headers })
-      setSubjects([...subjects, data])
-      closeModal()
+      setSubjects([...subjects, data]); closeModal()
     } catch (err) { console.log(err) }
   }
 
   const deleteSubject = async (id) => {
-    try {
-      await axios.delete(`/api/subjects/${id}`, { headers })
-      setSubjects(subjects.filter(s => s._id !== id))
-    } catch (err) { console.log(err) }
+    try { await axios.delete(`/api/subjects/${id}`, { headers }); setSubjects(subjects.filter(s => s._id !== id)) }
+    catch (err) { console.log(err) }
   }
 
   const addAssignment = () => {
     if (!form.title) return
-    setAssignments([...assignments, {
-      id: Date.now(),
-      title: `${form.subject ? form.subject + ' — ' : ''}${form.title}`,
-      desc: form.desc || '',
-      due: form.due || 'TBA',
-      color: '#a855f7'
-    }])
+    setAssignments([...assignments, { id: Date.now(), title: `${form.subject ? form.subject + ' — ' : ''}${form.title}`, desc: form.desc || '', due: form.due || 'TBA', color: '#a855f7' }])
     closeModal()
   }
 
@@ -100,11 +85,35 @@ export default function AdminDashboard() {
     closeModal()
   }
 
+  const openUploadModal = (subject, type) => {
+    setUploadSubject(subject); setUploadModal(type)
+    setUploadFile(null); setUploadTitle(''); setUploadUrl('')
+  }
+
+  const closeUploadModal = () => { setUploadModal(null); setUploadSubject(null) }
+
+  const handleUpload = async () => {
+    if (!uploadSubject) return
+    setUploading(true)
+    try {
+      if (uploadModal === 'video') {
+        await axios.post(`/api/subjects/${uploadSubject._id}/video`, { title: uploadTitle, url: uploadUrl }, { headers })
+      } else if (uploadModal === 'image') {
+        const fd = new FormData(); fd.append('image', uploadFile)
+        await axios.post(`/api/subjects/${uploadSubject._id}/image`, fd, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } })
+      } else {
+        const fd = new FormData(); fd.append('file', uploadFile); fd.append('title', uploadTitle); fd.append('type', uploadModal)
+        await axios.post(`/api/subjects/${uploadSubject._id}/upload`, fd, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } })
+      }
+      await fetchSubjects(); closeUploadModal()
+    } catch (err) { console.log(err) }
+    setUploading(false)
+  }
+
   const getInitials = (name) => name ? name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : '??'
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* BG ORBS */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,#7c3aed,transparent 70%)', filter: 'blur(80px)', opacity: .35, top: -120, right: -80 }} />
         <div style={{ position: 'absolute', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle,#0891b2,transparent 70%)', filter: 'blur(80px)', opacity: .3, bottom: 0, left: -60 }} />
@@ -152,9 +161,7 @@ export default function AdminDashboard() {
               {users.length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: '.82rem', padding: '1rem' }}>No users yet</div>}
               {users.slice(0, 5).map((u, i) => (
                 <div key={u._id} style={{ display: 'flex', alignItems: 'center', gap: '.85rem', padding: '.65rem .9rem', background: 'rgba(255,255,255,.03)', borderRadius: 10, marginBottom: '.4rem' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', fontWeight: 700, flexShrink: 0 }}>
-                    {getInitials(u.name)}
-                  </div>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', fontWeight: 700, flexShrink: 0 }}>{getInitials(u.name)}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '.82rem', fontWeight: 500 }}>{u.name}</div>
                     <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.35)' }}>{u.year} · {u.role}</div>
@@ -169,46 +176,36 @@ export default function AdminDashboard() {
         {/* USERS */}
         {section === 'users' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>👥 Users</h2>
-                <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>All registered students — {users.length} total</p>
-              </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>👥 Users</h2>
+              <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>All registered students — {users.length} total</p>
             </div>
             <div style={{ ...glass, padding: 0, overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,.04)' }}>
-                      {['Student', 'Email', 'Year', 'Role', 'Joined'].map(h => (
+                      {['Student','Email','Year','Role','Joined'].map(h => (
                         <th key={h} style={{ fontSize: '.68rem', fontWeight: 600, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', padding: '.75rem 1rem', textAlign: 'left' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {users.length === 0 && (
-                      <tr><td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: '.82rem' }}>No users yet</td></tr>
-                    )}
+                    {users.length === 0 && <tr><td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: '.82rem' }}>No users yet</td></tr>}
                     {users.map((u, i) => (
                       <tr key={u._id} style={{ borderTop: '1px solid rgba(255,255,255,.05)' }}>
                         <td style={{ padding: '.65rem 1rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 700, flexShrink: 0 }}>
-                              {getInitials(u.name)}
-                            </div>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 700, flexShrink: 0 }}>{getInitials(u.name)}</div>
                             <span style={{ fontSize: '.82rem' }}>{u.name}</span>
                           </div>
                         </td>
                         <td style={{ padding: '.65rem 1rem', fontSize: '.78rem', color: 'rgba(255,255,255,.4)' }}>{u.email}</td>
                         <td style={{ padding: '.65rem 1rem', fontSize: '.82rem' }}>{u.year}</td>
                         <td style={{ padding: '.65rem 1rem' }}>
-                          <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem' }}>
-                            {u.role}
-                          </span>
+                          <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem' }}>{u.role}</span>
                         </td>
-                        <td style={{ padding: '.65rem 1rem', fontSize: '.75rem', color: 'rgba(255,255,255,.35)' }}>
-                          {new Date(u.createdAt).toLocaleDateString()}
-                        </td>
+                        <td style={{ padding: '.65rem 1rem', fontSize: '.75rem', color: 'rgba(255,255,255,.35)' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -233,8 +230,7 @@ export default function AdminDashboard() {
                 return (
                   <div key={y} style={{ marginBottom: '.85rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.8rem', marginBottom: '.3rem' }}>
-                      <span>{y}</span>
-                      <span style={{ color: 'rgba(255,255,255,.4)' }}>{count} students · {pct}%</span>
+                      <span>{y}</span><span style={{ color: 'rgba(255,255,255,.4)' }}>{count} students · {pct}%</span>
                     </div>
                     <div style={{ height: 5, background: 'rgba(255,255,255,.07)', borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#a855f7,#818cf8)', borderRadius: 99, transition: 'width .5s' }} />
@@ -266,17 +262,22 @@ export default function AdminDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '1rem' }}>
                 {subjects.map(s => (
                   <div key={s._id} style={{ ...glass, position: 'relative', overflow: 'hidden' }}>
+                    {s.image && <img src={s.image} alt={s.name} style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 12, marginBottom: '.85rem' }} />}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.85rem' }}>
-                      <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.05rem', flexShrink: 0 }}>{s.icon}</div>
+                      {!s.image && <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.05rem', flexShrink: 0 }}>{s.icon}</div>}
                       <div>
                         <div style={{ fontSize: '.88rem', fontWeight: 600 }}>{s.name}</div>
                         <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.38)' }}>{s.code} · {s.credits} Credits · {s.year}</div>
+                        <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.3)', marginTop: '.2rem' }}>
+                          📄 {s.summaries?.length || 0} · 📝 {s.exams?.length || 0} · 🎥 {s.videos?.length || 0}
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-                      <button style={btnSm}>📄 Summary</button>
-                      <button style={btnSm}>📝 Exam</button>
-                      <button style={btnSm}>🎥 Video</button>
+                      <button style={btnSm} onClick={() => openUploadModal(s, 'summary')}>📄 Summary</button>
+                      <button style={btnSm} onClick={() => openUploadModal(s, 'exam')}>📝 Exam</button>
+                      <button style={btnSm} onClick={() => openUploadModal(s, 'video')}>🎥 Video</button>
+                      <button style={btnSm} onClick={() => openUploadModal(s, 'image')}>🖼️ Image</button>
                       <button style={btnDanger} onClick={() => deleteSubject(s._id)}>Delete</button>
                     </div>
                   </div>
@@ -300,7 +301,6 @@ export default function AdminDashboard() {
               <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
                 <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
-                <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Click "+ Add Assignment" to post one</div>
               </div>
             ) : (
               <div style={glass}>
@@ -334,7 +334,6 @@ export default function AdminDashboard() {
               <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>🔗</div>
                 <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No links yet</div>
-                <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Click "+ Add Link" to add university resources</div>
               </div>
             ) : (
               <div style={glass}>
@@ -355,7 +354,7 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* MODALS */}
+      {/* ADD MODALS */}
       {modal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: 'rgba(15,17,30,.95)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 20, padding: '1.6rem', width: '100%', maxWidth: 460, fontFamily: 'inherit' }}>
@@ -370,10 +369,7 @@ export default function AdminDashboard() {
                 <div><div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>Credits</div><input style={inp} name="credits" type="number" placeholder="3" onChange={handleForm} /></div>
                 <div><div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>Year</div>
                   <select style={inp} name="year" onChange={handleForm}>
-                    <option style={{ background: '#1a1d27' }}>Year 1</option>
-                    <option style={{ background: '#1a1d27' }}>Year 2</option>
-                    <option style={{ background: '#1a1d27' }}>Year 3</option>
-                    <option style={{ background: '#1a1d27' }}>Year 4</option>
+                    {['Year 1','Year 2','Year 3','Year 4'].map(y => <option key={y} style={{ background: '#1a1d27' }}>{y}</option>)}
                   </select>
                 </div>
               </div>
@@ -407,7 +403,44 @@ export default function AdminDashboard() {
                 <button onClick={addLink} style={btnPrimary}>Add Link</button>
               </div>
             </>}
+          </div>
+        </div>
+      )}
 
+      {/* UPLOAD MODAL */}
+      {uploadModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: 'rgba(15,17,30,.95)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 20, padding: '1.6rem', width: '100%', maxWidth: 440, fontFamily: 'inherit' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '.4rem', color: '#f1f5f9' }}>
+              {uploadModal === 'summary' ? '📄 Add Summary' : uploadModal === 'exam' ? '📝 Add Exam' : uploadModal === 'video' ? '🎥 Add YouTube Video' : '🖼️ Add Subject Image'}
+            </h3>
+            <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.3)', marginBottom: '1.2rem' }}>{uploadSubject?.name}</div>
+
+            {uploadModal !== 'image' && (
+              <div style={{ marginBottom: '.75rem' }}>
+                <div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>Title</div>
+                <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder={uploadModal === 'video' ? 'e.g. Lecture 3 — Linked Lists' : 'e.g. Chapter 3 Summary'} style={{ ...inp, marginBottom: 0 }} />
+              </div>
+            )}
+
+            {uploadModal === 'video' ? (
+              <div style={{ marginBottom: '.75rem' }}>
+                <div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>YouTube Link</div>
+                <input value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." style={{ ...inp, marginBottom: 0 }} />
+              </div>
+            ) : (
+              <div style={{ marginBottom: '.75rem' }}>
+                <div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>{uploadModal === 'image' ? 'Image (JPG/PNG)' : 'File (PDF)'}</div>
+                <input type="file" accept={uploadModal === 'image' ? 'image/*' : '.pdf'} onChange={e => setUploadFile(e.target.files[0])} style={{ ...inp, marginBottom: 0, padding: '.5rem' }} />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button onClick={closeUploadModal} style={{ background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, padding: '.5rem 1rem', fontSize: '.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+              <button onClick={handleUpload} disabled={uploading} style={{ ...btnPrimary, opacity: uploading ? .7 : 1 }}>
+                {uploading ? 'Uploading...' : uploadModal === 'video' ? 'Add Video' : 'Upload'}
+              </button>
+            </div>
           </div>
         </div>
       )}
