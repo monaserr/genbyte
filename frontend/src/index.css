@@ -1,0 +1,67 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background .3s, color .3s;
+  background: var(--bg);
+  color: var(--text);
+}
+
+:root {
+  --bg: #07080f;
+  --surface: rgba(255,255,255,.05);
+  --surface2: rgba(255,255,255,.07);
+  --border: rgba(255,255,255,.09);
+  --text: #f1f5f9;
+  --muted: rgba(255,255,255,.45);
+  --accent: #818cf8;
+  --nav-bg: rgba(7,8,15,.8);
+}
+
+[data-theme="light"] {
+  --bg: #f1f5f9;
+  --surface: rgba(48, 0, 0, 0.9);
+  --surface2: rgba(0,0,0,.04);
+  --border: rgba(0,0,0,.08);
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #6366f1;
+  --nav-bg: rgba(241,245,249,.9);
+}
+
+[data-theme="light"] body {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] div,
+[data-theme="light"] span,
+[data-theme="light"] p,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] button,
+[data-theme="light"] label {
+  color: #0f172a;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: #0f172a !important;
+  background: rgba(0,0,0,.05) !important;
+  border-color: rgba(0,0,0,.1) !important;
+}
+
+[data-theme="light"] nav {
+  background: rgba(241,245,249,.85) !important;
+  border-bottom: 1px solid rgba(0,0,0,.08) !important;
+}
+
+[data-theme="light"] .orb {
+  opacity: .08 !important;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
