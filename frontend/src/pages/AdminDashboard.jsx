@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const [uploadTitle, setUploadTitle] = useState('')
   const [uploadUrl, setUploadUrl] = useState('')
   const [uploading, setUploading] = useState(false)
-
+  const API = import.meta.env.VITE_API_URL || ''
   const token = localStorage.getItem('token')
   const headers = { Authorization: `Bearer ${token}` }
 
