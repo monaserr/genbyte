@@ -134,7 +134,7 @@ export default function AdminDashboard() {
         { id: 'signout', icon: '🚪', label: 'Sign Out' },
       ]} active={section} onSelect={handleSelect} isOpen={sidebarOpen} isAdmin />
 
-      <div style={{ padding: '80px 1.5rem 1.5rem 236px', position: 'relative', zIndex: 1 }}>
+      <div className="main-content" style={{ position: 'relative', zIndex: 1 }}>
 
         {/* OVERVIEW */}
         {section === 'overview' && (
@@ -162,11 +162,11 @@ export default function AdminDashboard() {
               {users.slice(0, 5).map((u, i) => (
                 <div key={u._id} style={{ display: 'flex', alignItems: 'center', gap: '.85rem', padding: '.65rem .9rem', background: 'rgba(255,255,255,.03)', borderRadius: 10, marginBottom: '.4rem' }}>
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', fontWeight: 700, flexShrink: 0 }}>{getInitials(u.name)}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '.82rem', fontWeight: 500 }}>{u.name}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
                     <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.35)' }}>{u.year} · {u.role}</div>
                   </div>
-                  <span style={{ fontSize: '.68rem', background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(52,211,153,.12)', color: u.role === 'admin' ? '#a855f7' : '#34d399', borderRadius: 99, padding: '.15rem .5rem', fontWeight: 600 }}>{u.role}</span>
+                  <span style={{ fontSize: '.68rem', background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(52,211,153,.12)', color: u.role === 'admin' ? '#a855f7' : '#34d399', borderRadius: 99, padding: '.15rem .5rem', fontWeight: 600, flexShrink: 0 }}>{u.role}</span>
                 </div>
               ))}
             </div>
@@ -182,11 +182,11 @@ export default function AdminDashboard() {
             </div>
             <div style={{ ...glass, padding: 0, overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,.04)' }}>
                       {['Student','Email','Year','Role','Joined'].map(h => (
-                        <th key={h} style={{ fontSize: '.68rem', fontWeight: 600, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', padding: '.75rem 1rem', textAlign: 'left' }}>{h}</th>
+                        <th key={h} style={{ fontSize: '.68rem', fontWeight: 600, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', padding: '.75rem 1rem', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -197,15 +197,15 @@ export default function AdminDashboard() {
                         <td style={{ padding: '.65rem 1rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
                             <div style={{ width: 28, height: 28, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 700, flexShrink: 0 }}>{getInitials(u.name)}</div>
-                            <span style={{ fontSize: '.82rem' }}>{u.name}</span>
+                            <span style={{ fontSize: '.82rem', whiteSpace: 'nowrap' }}>{u.name}</span>
                           </div>
                         </td>
-                        <td style={{ padding: '.65rem 1rem', fontSize: '.78rem', color: 'rgba(255,255,255,.4)' }}>{u.email}</td>
-                        <td style={{ padding: '.65rem 1rem', fontSize: '.82rem' }}>{u.year}</td>
+                        <td style={{ padding: '.65rem 1rem', fontSize: '.78rem', color: 'rgba(255,255,255,.4)', whiteSpace: 'nowrap' }}>{u.email}</td>
+                        <td style={{ padding: '.65rem 1rem', fontSize: '.82rem', whiteSpace: 'nowrap' }}>{u.year}</td>
                         <td style={{ padding: '.65rem 1rem' }}>
-                          <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem' }}>{u.role}</span>
+                          <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem', whiteSpace: 'nowrap' }}>{u.role}</span>
                         </td>
-                        <td style={{ padding: '.65rem 1rem', fontSize: '.75rem', color: 'rgba(255,255,255,.35)' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td style={{ padding: '.65rem 1rem', fontSize: '.75rem', color: 'rgba(255,255,255,.35)', whiteSpace: 'nowrap' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
         {/* SUBJECTS */}
         {section === 'subjects' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '.75rem' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>📚 Subjects</h2>
                 <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Manage course materials</p>
@@ -265,8 +265,8 @@ export default function AdminDashboard() {
                     {s.image && <img src={s.image} alt={s.name} style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 12, marginBottom: '.85rem' }} />}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.85rem' }}>
                       {!s.image && <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.05rem', flexShrink: 0 }}>{s.icon}</div>}
-                      <div>
-                        <div style={{ fontSize: '.88rem', fontWeight: 600 }}>{s.name}</div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '.88rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
                         <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.38)' }}>{s.code} · {s.credits} Credits · {s.year}</div>
                         <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.3)', marginTop: '.2rem' }}>
                           📄 {s.summaries?.length || 0} · 📝 {s.exams?.length || 0} · 🎥 {s.videos?.length || 0}
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
         {/* ASSIGNMENTS */}
         {section === 'assignments' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '.75rem' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>📋 Assignments</h2>
                 <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Post assignments for students</p>
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                 {assignments.map(a => (
                   <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem', padding: '.8rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0, marginTop: 5 }} />
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '.82rem', fontWeight: 600, marginBottom: '.18rem' }}>{a.title}</div>
                       <div style={{ fontSize: '.71rem', color: 'rgba(255,255,255,.38)' }}>{a.desc}</div>
                       <div style={{ fontSize: '.67rem', fontWeight: 600, marginTop: '.25rem', color: a.color }}>⏰ Due: {a.due}</div>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
         {/* LINKS */}
         {section === 'links' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '.75rem' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>🔗 University Links</h2>
                 <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Manage links visible to students</p>
@@ -339,10 +339,10 @@ export default function AdminDashboard() {
               <div style={glass}>
                 {links.map(l => (
                   <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.75rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{l.icon}</span>
-                    <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{l.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '.83rem', fontWeight: 500 }}>{l.name}</div>
-                      <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)' }}>{l.url}</div>
+                      <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.url}</div>
                     </div>
                     <button style={btnDanger} onClick={() => setLinks(links.filter(x => x.id !== l.id))}>Delete</button>
                   </div>
@@ -357,7 +357,7 @@ export default function AdminDashboard() {
       {/* ADD MODALS */}
       {modal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(8px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: 'rgba(15,17,30,.95)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 20, padding: '1.6rem', width: '100%', maxWidth: 460, fontFamily: 'inherit' }}>
+          <div style={{ background: 'rgba(15,17,30,.95)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 20, padding: '1.6rem', width: '100%', maxWidth: 460, fontFamily: 'inherit', maxHeight: '90vh', overflowY: 'auto' }}>
 
             {modal === 'subject' && <>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.2rem', color: '#f1f5f9' }}>📚 Add New Subject</h3>
@@ -415,14 +415,12 @@ export default function AdminDashboard() {
               {uploadModal === 'summary' ? '📄 Add Summary' : uploadModal === 'exam' ? '📝 Add Exam' : uploadModal === 'video' ? '🎥 Add YouTube Video' : '🖼️ Add Subject Image'}
             </h3>
             <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.3)', marginBottom: '1.2rem' }}>{uploadSubject?.name}</div>
-
             {uploadModal !== 'image' && (
               <div style={{ marginBottom: '.75rem' }}>
                 <div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>Title</div>
                 <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder={uploadModal === 'video' ? 'e.g. Lecture 3 — Linked Lists' : 'e.g. Chapter 3 Summary'} style={{ ...inp, marginBottom: 0 }} />
               </div>
             )}
-
             {uploadModal === 'video' ? (
               <div style={{ marginBottom: '.75rem' }}>
                 <div style={{ fontSize: '.67rem', color: 'rgba(255,255,255,.35)', marginBottom: '.25rem' }}>YouTube Link</div>
@@ -434,7 +432,6 @@ export default function AdminDashboard() {
                 <input type="file" accept={uploadModal === 'image' ? 'image/*' : '.pdf'} onChange={e => setUploadFile(e.target.files[0])} style={{ ...inp, marginBottom: 0, padding: '.5rem' }} />
               </div>
             )}
-
             <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
               <button onClick={closeUploadModal} style={{ background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, padding: '.5rem 1rem', fontSize: '.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
               <button onClick={handleUpload} disabled={uploading} style={{ ...btnPrimary, opacity: uploading ? .7 : 1 }}>

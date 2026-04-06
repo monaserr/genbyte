@@ -58,3 +58,18 @@ body {
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.main-content {
+  padding: 80px 1.5rem 1.5rem 236px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 75px 1rem 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 70px .75rem 1.5rem .75rem;
+  }
+}

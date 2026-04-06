@@ -4,18 +4,6 @@ import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
 
-const sidebarItems = [
-  { type: 'section', label: 'Student' },
-  { id: 'overview', icon: '🏠', label: 'Overview' },
-  { id: 'subjects', icon: '📚', label: 'Subjects' },
-  { id: 'todo', icon: '✅', label: 'My Tasks', badge: '3', badgeColor: '#f87171' },
-  { id: 'assignments', icon: '📋', label: 'Assignments', badge: '2', badgeColor: '#fbbf24' },
-  { id: 'gpa', icon: '🧮', label: 'GPA Calculator' },
-  { id: 'links', icon: '🔗', label: 'Uni Links' },
-  { type: 'spacer' },
-  { id: 'signout', icon: '🚪', label: 'Sign Out' },
-]
-
 const grades = { 'A+':4,'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D':1,'F':0 }
 
 const glass = { background: 'rgba(255,255,255,.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.09)', borderRadius: 20, padding: '1.3rem' }
@@ -42,9 +30,7 @@ export default function StudentDashboard() {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         setSubjects(data)
-      } catch (err) {
-        console.log(err)
-      }
+      } catch (err) { console.log(err) }
     }
     fetchSubjects()
   }, [selectedYear])
@@ -77,7 +63,6 @@ export default function StudentDashboard() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* BG ORBS */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,#6366f1,transparent 70%)', filter: 'blur(80px)', opacity: .35, top: -100, left: -100 }} />
         <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,#a855f7,transparent 70%)', filter: 'blur(80px)', opacity: .3, top: '40%', right: -80 }} />
@@ -97,7 +82,7 @@ export default function StudentDashboard() {
         { id: 'signout', icon: '🚪', label: 'Sign Out' },
       ]} active={section} onSelect={handleSelect} isOpen={sidebarOpen} />
 
-      <div style={{ padding: '80px 1.5rem 1.5rem 236px', position: 'relative', zIndex: 1 }}>
+      <div className="main-content" style={{ position: 'relative', zIndex: 1 }}>
 
         {/* OVERVIEW */}
         {section === 'overview' && (
@@ -158,8 +143,9 @@ export default function StudentDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))', gap: '1rem' }}>
                 {subjects.map(s => (
                   <div key={s._id} style={{ ...glass, position: 'relative', overflow: 'hidden' }}>
+                    {s.image && <img src={s.image} alt={s.name} style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 12, marginBottom: '.85rem' }} />}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>{s.icon}</div>
+                      {!s.image && <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>{s.icon}</div>}
                       <div>
                         <div style={{ fontSize: '.9rem', fontWeight: 600 }}>{s.name}</div>
                         <div style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.38)' }}>{s.code} · {s.credits} Credits</div>
@@ -189,7 +175,7 @@ export default function StudentDashboard() {
                 <input value={todoInput} onChange={e => setTodoInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTodo()} placeholder="Add a new task..." style={{ flex: 1, minWidth: 160, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '.6rem .85rem', color: 'var(--text)', fontSize: '.84rem', outline: 'none', fontFamily: 'inherit' }} />
                 <button onClick={addTodo} style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)', color: '#fff', border: 'none', borderRadius: 10, padding: '.6rem 1.1rem', fontSize: '.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>+ Add</button>
               </div>
-              <div style={{ display: 'flex', gap: '.4rem', marginBottom: '.85rem' }}>
+              <div style={{ display: 'flex', gap: '.4rem', marginBottom: '.85rem', flexWrap: 'wrap' }}>
                 {['all', 'pending', 'done'].map(f => (
                   <button key={f} onClick={() => setTodoFilter(f)} style={{ padding: '.3rem .8rem', borderRadius: 8, fontSize: '.74rem', fontWeight: 500, cursor: 'pointer', border: '1px solid', borderColor: todoFilter === f ? 'rgba(129,140,248,.3)' : 'rgba(255,255,255,.08)', background: todoFilter === f ? 'rgba(129,140,248,.2)' : 'rgba(255,255,255,.04)', color: todoFilter === f ? '#818cf8' : 'rgba(255,255,255,.4)', fontFamily: 'inherit' }}>
                     {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -231,16 +217,18 @@ export default function StudentDashboard() {
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Calculate your semester GPA</p>
             </div>
             <div style={glass}>
-              {gpaRows.map((row) => (
-                <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '2fr 80px 110px 36px', gap: '.45rem', marginBottom: '.5rem', alignItems: 'end' }}>
-                  <input value={row.name} onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, name: e.target.value } : r))} placeholder="Course name" style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }} />
-                  <input type="number" value={row.credits} min="1" max="6" onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, credits: +e.target.value } : r))} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }} />
-                  <select value={row.grade} onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, grade: e.target.value } : r))} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }}>
-                    {Object.keys(grades).map(g => <option key={g} style={{ background: '#1a1d27' }}>{g}</option>)}
-                  </select>
-                  <button onClick={() => setGpaRows(gpaRows.filter(r => r.id !== row.id))} style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, width: 36, height: 36, cursor: 'pointer', color: 'rgba(255,255,255,.35)', fontSize: '.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-                </div>
-              ))}
+              <div style={{ overflowX: 'auto' }}>
+                {gpaRows.map((row) => (
+                  <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '2fr 70px 100px 36px', gap: '.45rem', marginBottom: '.5rem', alignItems: 'end', minWidth: 320 }}>
+                    <input value={row.name} onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, name: e.target.value } : r))} placeholder="Course name" style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }} />
+                    <input type="number" value={row.credits} min="1" max="6" onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, credits: +e.target.value } : r))} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }} />
+                    <select value={row.grade} onChange={e => setGpaRows(gpaRows.map(r => r.id === row.id ? { ...r, grade: e.target.value } : r))} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 9, padding: '.5rem .65rem', color: 'var(--text)', fontSize: '.8rem', outline: 'none', fontFamily: 'inherit' }}>
+                      {Object.keys(grades).map(g => <option key={g} style={{ background: '#1a1d27' }}>{g}</option>)}
+                    </select>
+                    <button onClick={() => setGpaRows(gpaRows.filter(r => r.id !== row.id))} style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, width: 36, height: 36, cursor: 'pointer', color: 'rgba(255,255,255,.35)', fontSize: '.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                  </div>
+                ))}
+              </div>
               <button onClick={() => setGpaRows([...gpaRows, { id: Date.now(), name: '', credits: 3, grade: 'B' }])} style={{ padding: '.38rem .9rem', borderRadius: 9, fontSize: '.76rem', fontWeight: 500, cursor: 'pointer', border: '1px dashed rgba(255,255,255,.15)', background: 'transparent', color: 'rgba(255,255,255,.35)', fontFamily: 'inherit', marginTop: '.5rem' }}>+ Add Course</button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', padding: '1.1rem 1.3rem', background: 'rgba(129,140,248,.12)', border: '1px solid rgba(129,140,248,.2)', borderRadius: 12, marginTop: '1rem' }}>
                 <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#818cf8', letterSpacing: '-.05em' }}>{gpa}</div>
@@ -260,7 +248,7 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>🔗 University Links</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Official resources</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: '.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: '.75rem' }}>
               {[
                 { icon: '🎓', name: 'Student Portal', desc: 'Benha University' },
                 { icon: '📅', name: 'Schedule', desc: 'Academic calendar' },
