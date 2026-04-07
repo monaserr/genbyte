@@ -37,7 +37,7 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '.5rem' }}><Logo /></div>
           <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#f1f5f9' }}>GenByte</div>
-          <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.35)' }}><b style={{ color: '#818cf8' }}>Nesser</b> & <b style={{ color: '#818cf8' }}>3laa</b></div>
+          <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.35)' }}><b style={{ color: '#818cf8' }}>Nasser</b> & <b style={{ color: '#818cf8' }}>3laa</b></div>
         </div>
 
         <div style={{ display: 'flex', background: 'rgba(255,255,255,.05)', borderRadius: 10, padding: 3, marginBottom: '1.5rem', gap: 3 }}>

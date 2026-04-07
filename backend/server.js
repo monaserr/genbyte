@@ -12,6 +12,7 @@ app.use(cors({
   credentials: true
 }))
 
+app.use(express.json())
 
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/subjects', require('./routes/subjects'))
