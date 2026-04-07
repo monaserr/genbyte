@@ -5,7 +5,8 @@ const API = import.meta.env.VITE_API_URL || ''
 const api = axios.create({
   baseURL: `${API}/api`,
   headers: {
-    'ngrok-skip-browser-warning': 'true'
+    'ngrok-skip-browser-warning': 'true',
+    'Content-Type': 'application/json'
   }
 })
 
