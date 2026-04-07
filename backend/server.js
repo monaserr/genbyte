@@ -6,11 +6,12 @@ require('dotenv').config()
 const app = express()
 
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
+  origin: ['https://genbyte-five.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  credentials: true
 }))
-app.use(express.json())
+
 
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/subjects', require('./routes/subjects'))
