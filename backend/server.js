@@ -5,7 +5,11 @@ require('dotenv').config()
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
+}))
 app.use(express.json())
 
 app.use('/api/auth', require('./routes/auth'))
@@ -21,3 +25,4 @@ mongoose.connect(process.env.MONGO_URI, {
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
+

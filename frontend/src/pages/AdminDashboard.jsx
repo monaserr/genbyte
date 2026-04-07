@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../api'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
@@ -31,19 +31,19 @@ export default function AdminDashboard() {
   const [uploadTitle, setUploadTitle] = useState('')
   const [uploadUrl, setUploadUrl] = useState('')
   const [uploading, setUploading] = useState(false)
-  const API = import.meta.env.VITE_API_URL || ''
+
   const token = localStorage.getItem('token')
   const headers = { Authorization: `Bearer ${token}` }
 
   useEffect(() => { fetchUsers(); fetchSubjects() }, [])
 
   const fetchUsers = async () => {
-    try { const { data } = await axios.get('/api/users', { headers }); setUsers(data) }
+    try { const { data } = await api.get('/users'); setUsers(data) }
     catch (err) { console.log(err) }
   }
 
   const fetchSubjects = async () => {
-    try { const { data } = await axios.get('/api/subjects', { headers }); setSubjects(data) }
+    try { const { data } = await api.get('/subjects'); setSubjects(data) }
     catch (err) { console.log(err) }
   }
 
@@ -60,16 +60,16 @@ export default function AdminDashboard() {
     if (!form.name) return
     const i = subjects.length % 8
     try {
-      const { data } = await axios.post('/api/subjects', {
+      const { data } = await api.post('/subjects', {
         name: form.name, code: form.code || '—', credits: form.credits || '3',
         year: form.year || 'Year 1', icon: icons[i], color: colors[i]
-      }, { headers })
+      })
       setSubjects([...subjects, data]); closeModal()
     } catch (err) { console.log(err) }
   }
 
   const deleteSubject = async (id) => {
-    try { await axios.delete(`/api/subjects/${id}`, { headers }); setSubjects(subjects.filter(s => s._id !== id)) }
+    try { await api.delete(`/subjects/${id}`); setSubjects(subjects.filter(s => s._id !== id)) }
     catch (err) { console.log(err) }
   }
 
@@ -97,13 +97,13 @@ export default function AdminDashboard() {
     setUploading(true)
     try {
       if (uploadModal === 'video') {
-        await axios.post(`/api/subjects/${uploadSubject._id}/video`, { title: uploadTitle, url: uploadUrl }, { headers })
+        await api.post(`/subjects/${uploadSubject._id}/video`, { title: uploadTitle, url: uploadUrl })
       } else if (uploadModal === 'image') {
         const fd = new FormData(); fd.append('image', uploadFile)
-        await axios.post(`/api/subjects/${uploadSubject._id}/image`, fd, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } })
+        await api.post(`/subjects/${uploadSubject._id}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       } else {
         const fd = new FormData(); fd.append('file', uploadFile); fd.append('title', uploadTitle); fd.append('type', uploadModal)
-        await axios.post(`/api/subjects/${uploadSubject._id}/upload`, fd, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } })
+        await api.post(`/subjects/${uploadSubject._id}/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       }
       await fetchSubjects(); closeUploadModal()
     } catch (err) { console.log(err) }

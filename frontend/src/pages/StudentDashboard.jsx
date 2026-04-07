@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../api'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
 
-const API = import.meta.env.VITE_API_URL || ''
 const grades = { 'A+':4,'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D':1,'F':0 }
 
 const glass = { background: 'rgba(255,255,255,.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.09)', borderRadius: 20, padding: '1.3rem' }
@@ -26,15 +25,13 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-  try {
-    const { data } = await axios.get(`${API}/api/subjects?year=${selectedYear}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-    setSubjects(data)
-  } catch (err) { console.log(err) }
-}
-fetchSubjects()
-}, [selectedYear])
+      try {
+        const { data } = await api.get(`/subjects?year=${selectedYear}`)
+        setSubjects(data)
+      } catch (err) { console.log(err) }
+    }
+    fetchSubjects()
+  }, [selectedYear])
 
   const handleSelect = (id) => {
     if (id === 'signout') { logout(); return }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from '../components/Logo'
-import axios from 'axios'
+import api from '../api'
 
 export default function Login() {
   const [tab, setTab] = useState('signin')
@@ -18,8 +18,8 @@ export default function Login() {
     setLoading(true)
     setError('')
     try {
-      const url = tab === 'signin' ? '/api/auth/login' : '/api/auth/register'
-      const { data } = await axios.post(url, form)
+      const url = tab === 'signin' ? '/auth/login' : '/auth/register'
+      const { data } = await api.post(url, form)
       login(data.user, data.token)
       nav(data.user.role === 'admin' ? '/admin' : '/student')
     } catch (err) {
@@ -31,17 +31,15 @@ export default function Login() {
   const inp = { width: '100%', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '.62rem .85rem', color: '#f1f5f9', fontSize: '.88rem', outline: 'none', fontFamily: 'inherit', marginBottom: '.9rem' }
 
   return (
-      <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div style={{ background: 'rgba(255,255,255,.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.09)', borderRadius: 20, padding: '2rem', width: '100%', maxWidth: 380, margin: '1rem' }}>
 
-        {/* LOGO */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '.5rem' }}><Logo /></div>
           <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#f1f5f9' }}>GenByte</div>
-          <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.35)' }}><b style={{ color: '#818cf8' }}>Naaserr</b> & <b style={{ color: '#818cf8' }}>3laaa</b></div>
+          <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.35)' }}><b style={{ color: '#818cf8' }}>Nesser</b> & <b style={{ color: '#818cf8' }}>3laa</b></div>
         </div>
 
-        {/* TABS */}
         <div style={{ display: 'flex', background: 'rgba(255,255,255,.05)', borderRadius: 10, padding: 3, marginBottom: '1.5rem', gap: 3 }}>
           {['signin', 'signup'].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '.42rem', borderRadius: 7, fontSize: '.82rem', fontWeight: 500, cursor: 'pointer', border: 'none', fontFamily: 'inherit', background: tab === t ? 'rgba(255,255,255,.08)' : 'transparent', color: tab === t ? '#f1f5f9' : 'rgba(255,255,255,.4)', transition: 'all .2s' }}>
@@ -50,7 +48,6 @@ export default function Login() {
           ))}
         </div>
 
-        {/* FORM */}
         {tab === 'signup' && <input style={inp} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />}
         <input style={inp} name="email" type="email" placeholder="you@benha.edu.eg" value={form.email} onChange={handleChange} />
         {tab === 'signup' && (
