@@ -7,7 +7,11 @@ const app = express()
 
 // CORS configuration - must be before routes
 app.use(cors({
-  origin: ['https://genbyte-five.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    'https://genbyte-five.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   credentials: true
