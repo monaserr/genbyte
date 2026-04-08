@@ -8,14 +8,14 @@ const app = express()
 // CORS configuration - must be before routes
 app.use(cors({
   origin: [
-    'https://genbyte-five.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:5174'
+    "https://genbyte-five.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174"
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
-}))
+}));
 
 // Middleware - MUST be before routes
 app.use(express.json({ limit: '50mb' }))
