@@ -7,9 +7,19 @@ const subjectSchema = new mongoose.Schema({
   year: { type: String, required: true },
   icon: { type: String, default: '📚' },
   color: { type: String, default: 'rgba(129,140,248,.12)' },
-  summaries: [{ title: String, url: String }],
-  exams: [{ title: String, url: String }],
-  videos: [{ title: String, url: String }]
+  image: { type: String, default: null },
+  summaries: [{ 
+    title: { type: String, required: true },
+    url: { type: String, required: true }
+  }],
+  exams: [{ 
+    title: { type: String, required: true },
+    url: { type: String, required: true }
+  }],
+  videos: [{ 
+    title: { type: String, required: true },
+    url: { type: String, required: true }
+  }]
 }, { timestamps: true })
 
 module.exports = mongoose.model('Subject', subjectSchema)
