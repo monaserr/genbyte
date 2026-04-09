@@ -9,16 +9,6 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  transition: all .3s ease;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-  line-height: 1.5;
-}
-
 /* ========== ROOT COLORS - LIGHT MODE (DEFAULT) ========== */
 :root {
   /* Base Colors */
@@ -43,6 +33,10 @@ body {
   /* Shadows */
   --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 8px 24px rgba(0, 0, 0, .06);
   --shadow-lg: 0 4px 6px rgba(0, 0, 0, .05), 0 20px 40px rgba(0, 0, 0, .08);
+  
+  /* Border Radius */
+  --radius: 16px;
+  --radius-sm: 10px;
   
   /* Glass Morphism */
   --glass-bg: rgba(255, 255, 255, .85);
@@ -90,49 +84,61 @@ body {
   --gradient-accent: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
 }
 
-/* Apply light mode overrides */
-[data-theme="light"] {
-  --accent: #7c3aed;
-  --accent2: #6d28d9;
-  --accent-light: rgba(124, 58, 237, .08);
+/* ========== BODY & BACKGROUND ========== */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124, 58, 237, .07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(6, 182, 212, .06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="dark"] body::before {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124, 58, 237, .12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(6, 182, 212, .1) 0%, transparent 60%);
 }
 
 /* ========== SCROLLBAR STYLING ========== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg2);
+  width: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 99px;
-  transition: background .2s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+/* ========== MAIN CONTENT LAYOUT ========== */
+.main-content {
+  padding: 90px 1.5rem 1.5rem 250px;
+  position: relative;
+  z-index: 1;
 }
 
-/* ========== NAVBAR ========== */
-nav {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: .6rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px);
-  transition: all .3s ease;
+@media (max-width: 768px) {
+  .main-content {
+    padding: 85px 1rem 1.5rem 1rem;
+  }
 }
 
-nav:hover {
-  box-shadow: var(--shadow-lg);
+@media (max-width: 480px) {
+  .main-content {
+    padding: 80px .75rem 1.5rem .75rem;
+  }
 }
 
 /* ========== BUTTONS ========== */
@@ -140,7 +146,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: all .2s ease;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   outline: none;
   border: none;
@@ -160,7 +166,7 @@ button:disabled {
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: .45rem .9rem;
   font-weight: 600;
   transition: all .2s ease;
@@ -176,7 +182,7 @@ button:disabled {
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: .45rem .9rem;
   color: var(--text);
   transition: all .2s ease;
@@ -192,7 +198,7 @@ button:disabled {
   background: rgba(239, 68, 68, .1);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, .2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: .45rem .9rem;
   transition: all .2s ease;
 }
@@ -207,7 +213,7 @@ button:disabled {
   background: rgba(52, 211, 153, .1);
   color: var(--success);
   border: 1px solid rgba(52, 211, 153, .2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: .45rem .9rem;
   transition: all .2s ease;
 }
@@ -221,7 +227,7 @@ button:disabled {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius);
   padding: 1.2rem;
   transition: all .25s cubic-bezier(.4, 0, .2, 1);
   box-shadow: var(--shadow);
