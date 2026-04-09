@@ -22,24 +22,41 @@ export default function StudentDashboard() {
   const [todoFilter, setTodoFilter] = useState('all')
   const [contentModal, setContentModal] = useState(null) // { subjectId, type, subject }
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [loadingMaterials, setLoadingMaterials] = useState(false)
   const [gpaRows, setGpaRows] = useState([
     { id: 1, name: '', credits: 3, grade: 'B' },
     { id: 2, name: '', credits: 3, grade: 'A' },
   ])
 
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const { data } = await api.get(`/subjects?year=${selectedYear}`)
-        setSubjects(data)
-        setError('')
-      } catch (err) { 
-        console.error(err)
-        setError('Failed to load subjects. Please refresh the page.')
-      }
+  // Fetch subjects - callable from anywhere
+  const fetchSubjects = async (year = selectedYear) => {
+    setLoadingMaterials(true)
+    try {
+      const { data } = await api.get(`/subjects?year=${year}`)
+      setSubjects(data)
+      setError('')
+    } catch (err) { 
+      console.error('Failed to load subjects:', err)
+      setError('Failed to load subjects. Please refresh the page.')
+    } finally {
+      setLoadingMaterials(false)
     }
+  }
+
+  // Fetch on mount and when year changes
+  useEffect(() => {
     fetchSubjects()
   }, [selectedYear])
+
+  // Optional: Poll for updates every 5 seconds when contentModal is open
+  useEffect(() => {
+    if (!contentModal) return
+    const interval = setInterval(() => {
+      fetchSubjects()
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [contentModal, selectedYear])
 
   const handleSelect = (id) => {
     if (id === 'signout') { logout(); return }
@@ -133,6 +150,7 @@ export default function StudentDashboard() {
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Your course materials</p>
             </div>
             {error && <div style={{ background: 'rgba(248,113,113,.15)', border: '1px solid rgba(248,113,113,.2)', color: '#f87171', padding: '1rem', borderRadius: 12, marginBottom: '1.2rem', fontSize: '.85rem' }}>{error}</div>}
+            {success && <div style={{ background: 'rgba(52,211,153,.15)', border: '1px solid rgba(52,211,153,.2)', color: '#34d399', padding: '1rem', borderRadius: 12, marginBottom: '1.2rem', fontSize: '.85rem' }}>{success}</div>}
             <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
               {['Year 1','Year 2','Year 3','Year 4'].map(y => (
                 <button key={y} onClick={() => setSelectedYear(y)} style={{ padding: '.35rem .85rem', borderRadius: 8, fontSize: '.76rem', fontWeight: 500, cursor: 'pointer', border: '1px solid', borderColor: selectedYear === y ? 'transparent' : 'rgba(255,255,255,.08)', background: selectedYear === y ? 'linear-gradient(135deg,#6366f1,#818cf8)' : 'rgba(255,255,255,.04)', color: selectedYear === y ? '#fff' : 'rgba(255,255,255,.4)', fontFamily: 'inherit' }}>
@@ -140,40 +158,45 @@ export default function StudentDashboard() {
                 </button>
               ))}
             </div>
-            {subjects.length === 0 ? (
+            {loadingMaterials && subjects.length === 0 ? (
+              <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+                <div style={{ fontSize: '1.5rem', animation: 'spin 1s linear infinite' }}>⏳</div>
+                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>Loading subjects...</div>
+              </div>
+            ) : subjects.length === 0 ? (
               <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>📭</div>
                 <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No subjects yet</div>
                 <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', maxWidth: 280, lineHeight: 1.6 }}>Subjects will appear here once your admin adds them</div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '1rem' }}>
                 {subjects.map(s => (
-                  <div key={s._id} style={{ ...glass, position: 'relative', overflow: 'hidden', transition: 'all .3s ease', cursor: 'pointer' }}
+                  <div key={s._id} style={{ ...glass, position: 'relative', overflow: 'hidden', transition: 'all .3s ease' }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-4px)', e.currentTarget.style.boxShadow = '0 12px 32px rgba(99,102,241,.2)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = 'none')}
                   >
-                    {s.image && <img src={s.image} alt={s.name} style={{ width: '100%', height: 110, objectFit: 'cover', borderRadius: 14, marginBottom: '1rem' }} />}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.8rem', marginBottom: '1.2rem' }}>
-                      {!s.image && <div style={{ width: 44, height: 44, borderRadius: 12, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0, boxShadow: `0 4px 12px rgba(99,102,241,.15)` }}>{s.icon}</div>}
-                      <div>
-                        <div style={{ fontSize: '.92rem', fontWeight: 700, color: 'var(--text)' }}>{s.name}</div>
-                        <div style={{ fontSize: '.73rem', color: 'rgba(255,255,255,.45)' }}>{s.code} · {s.credits} Cr</div>
+                    {s.image && <img src={s.image} alt={s.name} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 12, marginBottom: '.85rem' }} />}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.9rem' }}>
+                      {!s.image && <div style={{ width: 36, height: 36, borderRadius: 10, background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>{s.icon}</div>}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
+                        <div style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.45)' }}>{s.code} · {s.credits} Cr</div>
                       </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.5rem' }}>
-                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'summary', subject: s })} style={{ padding: '.5rem .3rem', borderRadius: 9, fontSize: '.7rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'summary', subject: s })} style={{ padding: '.45rem .5rem', borderRadius: 8, fontSize: '.68rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)', textAlign: 'left' }}
                         onMouseEnter={e => (e.target.style.background = 'rgba(255,255,255,.15)', e.target.style.borderColor = 'rgba(255,255,255,.25)')}
                         onMouseLeave={e => (e.target.style.background = 'rgba(255,255,255,.08)', e.target.style.borderColor = 'rgba(255,255,255,.15)')}
-                      >📄 Summaries ({s.summaries?.length || 0})</button>
-                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'exam', subject: s })} style={{ padding: '.5rem .3rem', borderRadius: 9, fontSize: '.7rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
+                      >📄 Summaries <span style={{ float: 'right', fontWeight: 700 }}>({s.summaries?.length || 0})</span></button>
+                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'exam', subject: s })} style={{ padding: '.45rem .5rem', borderRadius: 8, fontSize: '.68rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)', textAlign: 'left' }}
                         onMouseEnter={e => (e.target.style.background = 'rgba(255,255,255,.15)', e.target.style.borderColor = 'rgba(255,255,255,.25)')}
                         onMouseLeave={e => (e.target.style.background = 'rgba(255,255,255,.08)', e.target.style.borderColor = 'rgba(255,255,255,.15)')}
-                      >📝 Exams ({s.exams?.length || 0})</button>
-                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'video', subject: s })} style={{ padding: '.5rem .3rem', borderRadius: 9, fontSize: '.7rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
+                      >📝 Exams <span style={{ float: 'right', fontWeight: 700 }}>({s.exams?.length || 0})</span></button>
+                      <button onClick={() => setContentModal({ subjectId: s._id, type: 'video', subject: s })} style={{ padding: '.45rem .5rem', borderRadius: 8, fontSize: '.68rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,.15)', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.7)', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)', textAlign: 'left' }}
                         onMouseEnter={e => (e.target.style.background = 'rgba(255,255,255,.15)', e.target.style.borderColor = 'rgba(255,255,255,.25)')}
                         onMouseLeave={e => (e.target.style.background = 'rgba(255,255,255,.08)', e.target.style.borderColor = 'rgba(255,255,255,.15)')}
-                      >🎥 Videos ({s.videos?.length || 0})</button>
+                      >🎥 Videos <span style={{ float: 'right', fontWeight: 700 }}>({s.videos?.length || 0})</span></button>
                     </div>
                   </div>
                 ))}
@@ -314,28 +337,33 @@ export default function StudentDashboard() {
       {/* CONTENT MODAL */}
       {contentModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: 'rgba(15,17,30,.95)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: 22, padding: '2rem', width: '100%', maxWidth: 600, fontFamily: 'inherit', maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text)' }}>
-                {contentModal.type === 'summary' ? '📄 Course Summaries' : contentModal.type === 'exam' ? '📝 Previous Exams' : '🎥 Video Lectures'}
+          <div style={{ background: 'rgba(15,17,30,.95)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: 18, padding: 'clamp(1rem, 5vw, 2rem)', width: '100%', maxWidth: 'min(600px, 90vw)', fontFamily: 'inherit', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem', gap: '.5rem' }}>
+              <h3 style={{ fontSize: 'clamp(.95rem, 4vw, 1.2rem)', fontWeight: 700, color: 'var(--text)', flex: 1 }}>
+                {contentModal.type === 'summary' ? '📄 Summaries' : contentModal.type === 'exam' ? '📝 Exams' : '🎥 Videos'}
               </h3>
-              <button onClick={() => setContentModal(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', fontSize: '1.5rem', fontWeight: 700 }}>✕</button>
+              <button onClick={() => setContentModal(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', fontSize: '1.5rem', fontWeight: 700, flexShrink: 0, padding: 0, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
 
-            <div style={{ color: 'rgba(255,255,255,.6)', fontSize: '.9rem', marginBottom: '1.5rem' }}>
-              <span style={{ fontWeight: 600 }}>{contentModal.subject.name}</span> ({contentModal.subject.code})
+            <div style={{ color: 'rgba(255,255,255,.6)', fontSize: 'clamp(.8rem, 2vw, .9rem)', marginBottom: '1.2rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,.1)' }}>
+              <span style={{ fontWeight: 600 }}>{contentModal.subject.name}</span> · <span>{contentModal.subject.code}</span>
             </div>
 
-            {contentModal.type === 'video' ? (
+            {loadingMaterials ? (
+              <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem 1rem' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '1rem', animation: 'spin 1s linear infinite' }}>⏳</div>
+                <div>Loading materials...</div>
+              </div>
+            ) : contentModal.type === 'video' ? (
               // Videos
               <>
                 {contentModal.subject.videos?.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem' }}>
-                    <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🎥</div>
-                    No video lectures uploaded yet
+                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem 1rem' }}>
+                    <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', marginBottom: '1rem' }}>🎥</div>
+                    <div style={{ fontSize: '.9rem' }}>No video lectures uploaded yet</div>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gap: '.8rem' }}>
+                  <div style={{ display: 'grid', gap: '.6rem' }}>
                     {contentModal.subject.videos.map((video, i) => (
                       <a
                         key={i}
@@ -344,10 +372,10 @@ export default function StudentDashboard() {
                         rel="noopener noreferrer"
                         style={{
                           display: 'block',
-                          padding: '1rem',
+                          padding: 'clamp(.7rem, 3vw, 1rem)',
                           background: 'rgba(255,255,255,.05)',
                           border: '1px solid rgba(255,255,255,.1)',
-                          borderRadius: 12,
+                          borderRadius: 10,
                           color: 'var(--text)',
                           textDecoration: 'none',
                           transition: 'all .2s ease',
@@ -356,8 +384,8 @@ export default function StudentDashboard() {
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.1)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.2)', e.currentTarget.style.transform = 'translateX(4px)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,.05)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)', e.currentTarget.style.transform = 'translateX(0)')}
                       >
-                        <div style={{ fontWeight: 600, marginBottom: '.4rem' }}>▶️ {video.title}</div>
-                        <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.45)' }}>{video.url}</div>
+                        <div style={{ fontWeight: 600, marginBottom: '.3rem', fontSize: 'clamp(.8rem, 2vw, .95rem)' }}>▶️ {video.title}</div>
+                        <div style={{ fontSize: 'clamp(.7rem, 1.5vw, .8rem)', color: 'rgba(255,255,255,.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🔗 {video.url}</div>
                       </a>
                     ))}
                   </div>
@@ -368,12 +396,12 @@ export default function StudentDashboard() {
               <>
                 {contentModal.type === 'summary' ? (
                   contentModal.subject.summaries?.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem' }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📄</div>
-                      No summaries uploaded yet
+                    <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem 1rem' }}>
+                      <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', marginBottom: '1rem' }}>📄</div>
+                      <div style={{ fontSize: '.9rem' }}>No summaries uploaded yet</div>
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gap: '.8rem' }}>
+                    <div style={{ display: 'grid', gap: '.6rem' }}>
                       {contentModal.subject.summaries.map((summary, i) => (
                         <a
                           key={i}
@@ -382,10 +410,10 @@ export default function StudentDashboard() {
                           rel="noopener noreferrer"
                           style={{
                             display: 'block',
-                            padding: '1rem',
+                            padding: 'clamp(.7rem, 3vw, 1rem)',
                             background: 'rgba(255,255,255,.05)',
                             border: '1px solid rgba(255,255,255,.1)',
-                            borderRadius: 12,
+                            borderRadius: 10,
                             color: 'var(--text)',
                             textDecoration: 'none',
                             transition: 'all .2s ease',
@@ -394,20 +422,20 @@ export default function StudentDashboard() {
                           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.1)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.2)', e.currentTarget.style.transform = 'translateX(4px)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,.05)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)', e.currentTarget.style.transform = 'translateX(0)')}
                         >
-                          <div style={{ fontWeight: 600, marginBottom: '.4rem' }}>📖 {summary.title}</div>
-                          <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.45)' }}>{summary.url}</div>
+                          <div style={{ fontWeight: 600, marginBottom: '.3rem', fontSize: 'clamp(.8rem, 2vw, .95rem)' }}>📖 {summary.title}</div>
+                          <div style={{ fontSize: 'clamp(.7rem, 1.5vw, .8rem)', color: 'rgba(255,255,255,.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📥 {summary.url}</div>
                         </a>
                       ))}
                     </div>
                   )
                 ) : (
                   contentModal.subject.exams?.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem' }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📝</div>
-                      No exams uploaded yet
+                    <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', padding: '2rem 1rem' }}>
+                      <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', marginBottom: '1rem' }}>📝</div>
+                      <div style={{ fontSize: '.9rem' }}>No exams uploaded yet</div>
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gap: '.8rem' }}>
+                    <div style={{ display: 'grid', gap: '.6rem' }}>
                       {contentModal.subject.exams.map((exam, i) => (
                         <a
                           key={i}
@@ -416,10 +444,10 @@ export default function StudentDashboard() {
                           rel="noopener noreferrer"
                           style={{
                             display: 'block',
-                            padding: '1rem',
+                            padding: 'clamp(.7rem, 3vw, 1rem)',
                             background: 'rgba(255,255,255,.05)',
                             border: '1px solid rgba(255,255,255,.1)',
-                            borderRadius: 12,
+                            borderRadius: 10,
                             color: 'var(--text)',
                             textDecoration: 'none',
                             transition: 'all .2s ease',
@@ -428,8 +456,8 @@ export default function StudentDashboard() {
                           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.1)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.2)', e.currentTarget.style.transform = 'translateX(4px)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,.05)', e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)', e.currentTarget.style.transform = 'translateX(0)')}
                         >
-                          <div style={{ fontWeight: 600, marginBottom: '.4rem' }}>📄 {exam.title}</div>
-                          <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.45)' }}>{exam.url}</div>
+                          <div style={{ fontWeight: 600, marginBottom: '.3rem', fontSize: 'clamp(.8rem, 2vw, .95rem)' }}>📄 {exam.title}</div>
+                          <div style={{ fontSize: 'clamp(.7rem, 1.5vw, .8rem)', color: 'rgba(255,255,255,.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📥 {exam.url}</div>
                         </a>
                       ))}
                     </div>
@@ -440,6 +468,13 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
+      
+      {/* CSS for animations */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }

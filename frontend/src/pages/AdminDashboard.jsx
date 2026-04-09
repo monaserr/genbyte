@@ -462,14 +462,17 @@ export default function AdminDashboard() {
       {/* UPLOAD MODAL */}
       {uploadModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: 'rgba(15,17,30,.95)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: 22, padding: '2rem', width: '100%', maxWidth: 460, fontFamily: 'inherit', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '.5rem', color: 'var(--text)' }}>
-              {uploadModal === 'summary' ? '📄 Add Summary' : uploadModal === 'exam' ? '📝 Add Exam' : uploadModal === 'video' ? '🎥 Add YouTube Video' : '🖼️ Add Subject Image'}
+          <div style={{ background: 'rgba(15,17,30,.95)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: 18, padding: 'clamp(1rem, 5vw, 2rem)', width: '100%', maxWidth: 'min(480px, 90vw)', fontFamily: 'inherit', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+            <h3 style={{ fontSize: 'clamp(1rem, 4vw, 1.1rem)', fontWeight: 700, marginBottom: '.8rem', color: 'var(--text)' }}>
+              {uploadModal === 'summary' ? '📄 Add Summary' : uploadModal === 'exam' ? '📝 Add Exam' : uploadModal === 'video' ? '🎥 Add Video' : '🖼️ Add Image'}
             </h3>
-            <div style={{ fontSize: '.76rem', color: 'rgba(255,255,255,.4)', marginBottom: '1.3rem' }}>{uploadSubject?.name}</div>
+            <div style={{ fontSize: 'clamp(.7rem, 2vw, .76rem)', color: 'rgba(255,255,255,.4)', marginBottom: '1.2rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,.1)' }}>{uploadSubject?.name}</div>
+            
+            {error && <div style={{ background: 'rgba(248,113,113,.15)', border: '1px solid rgba(248,113,113,.2)', color: '#f87171', padding: '.75rem', borderRadius: 10, marginBottom: '.85rem', fontSize: '.8rem', display: 'flex', alignItems: 'center', gap: '.5rem' }}>⚠️ {error}</div>}
+            
             {uploadModal !== 'image' && (
               <div style={{ marginBottom: '.85rem' }}>
-                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Title</div>
+                <label style={{ fontSize: 'clamp(.65rem, 1.5vw, .68rem)', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600, display: 'block' }}>Title</label>
                 <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder={uploadModal === 'video' ? 'e.g. Lecture 3 — Linked Lists' : 'e.g. Chapter 3 Summary'} style={{ ...inp, marginBottom: 0 }} 
                   onFocus={e => (e.target.style.background = 'rgba(255,255,255,.12)', e.target.style.borderColor = 'rgba(129,140,248,.3)')}
                   onBlur={e => (e.target.style.background = 'rgba(255,255,255,.08)', e.target.style.borderColor = 'rgba(255,255,255,.12)')}
@@ -478,28 +481,29 @@ export default function AdminDashboard() {
             )}
             {uploadModal === 'video' ? (
               <div style={{ marginBottom: '.85rem' }}>
-                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>YouTube Link</div>
-                <input value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." style={{ ...inp, marginBottom: 0 }}
+                <label style={{ fontSize: 'clamp(.65rem, 1.5vw, .68rem)', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600, display: 'block' }}>YouTube URL</label>
+                <input value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="https://youtu.be/..." style={{ ...inp, marginBottom: 0 }}
                   onFocus={e => (e.target.style.background = 'rgba(255,255,255,.12)', e.target.style.borderColor = 'rgba(129,140,248,.3)')}
                   onBlur={e => (e.target.style.background = 'rgba(255,255,255,.08)', e.target.style.borderColor = 'rgba(255,255,255,.12)')}
                 />
               </div>
             ) : (
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>{uploadModal === 'image' ? 'Image (JPG/PNG)' : 'File (PDF)'}</div>
-                <input type="file" accept={uploadModal === 'image' ? 'image/*' : '.pdf'} onChange={e => setUploadFile(e.target.files[0])} style={{ ...inp, marginBottom: 0, padding: '.6rem', color: 'var(--text)' }} />
+                <label style={{ fontSize: 'clamp(.65rem, 1.5vw, .68rem)', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600, display: 'block' }}>{uploadModal === 'image' ? 'Image (JPG/PNG)' : 'PDF File'}</label>
+                <input type="file" accept={uploadModal === 'image' ? 'image/*' : '.pdf'} onChange={e => setUploadFile(e.target.files[0])} style={{ ...inp, marginBottom: 0, padding: '.6rem', color: 'var(--text)', fontSize: '.8rem' }} />
+                {uploadFile && <div style={{ fontSize: '.7rem', color: 'rgba(52,211,153,.7)', marginTop: '.4rem' }}>✓ {uploadFile.name}</div>}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '.7rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-              <button onClick={closeUploadModal} style={{ background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.6)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 11, padding: '.55rem 1.1rem', fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
-                onMouseEnter={e => (e.target.style.background = 'rgba(255,255,255,.15)')}
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button onClick={closeUploadModal} disabled={uploading} style={{ background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.6)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '.6rem 1.1rem', fontSize: '.82rem', fontWeight: 600, cursor: uploading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)', opacity: uploading ? .5 : 1 }}
+                onMouseEnter={e => !uploading && (e.target.style.background = 'rgba(255,255,255,.15)')}
                 onMouseLeave={e => (e.target.style.background = 'rgba(255,255,255,.08)')}
               >Cancel</button>
-              <button onClick={handleUpload} disabled={uploading} style={{ ...btnPrimary, opacity: uploading ? .7 : 1, pointerEvents: uploading ? 'none' : 'auto' }}
+              <button onClick={handleUpload} disabled={uploading} style={{ ...btnPrimary, opacity: uploading ? .7 : 1, pointerEvents: uploading ? 'none' : 'auto', padding: '.6rem 1.5rem', fontSize: '.82rem' }}
                 onMouseEnter={e => !uploading && (e.target.style.transform = 'translateY(-2px)', e.target.style.boxShadow = '0 12px 32px rgba(99,102,241,.35)')}
                 onMouseLeave={e => (e.target.style.transform = 'translateY(0)', e.target.style.boxShadow = '0 8px 24px rgba(99,102,241,.25)')}
               >
-                {uploading ? 'Uploading...' : uploadModal === 'video' ? 'Add Video' : 'Upload'}
+                {uploading ? '⏳ Uploading...' : uploadModal === 'video' ? '🎥 Add Video' : (uploadModal === 'image' ? '🖼️ Upload Image' : '📤 Upload')}
               </button>
             </div>
           </div>
