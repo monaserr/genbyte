@@ -53,21 +53,39 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
 // UPLOAD file to subject (summary or exam)
 router.post('/:id/upload', auth, isAdmin, upload.single('file'), async (req, res) => {
   try {
+    console.log('📤 Upload endpoint called')
+    console.log('   req.body:', req.body)
+    console.log('   req.file:', req.file ? `✓ File: ${req.file.filename}` : '❌ No file')
+    
     const { type, title } = req.body
+    
+    if (!type || !title) {
+      return res.status(400).json({ msg: 'Missing type or title' })
+    }
+    
     if (!req.file) {
       return res.status(400).json({ msg: 'No file uploaded' })
     }
+    
     const url = req.file.path
+    console.log(`   File URL from Cloudinary: ${url}`)
+    
     const subject = await Subject.findById(req.params.id)
     if (!subject) return res.status(404).json({ msg: 'Subject not found' })
+    
     if (type === 'summary') subject.summaries.push({ title, url })
     else if (type === 'exam') subject.exams.push({ title, url })
+    else {
+      return res.status(400).json({ msg: 'Invalid type' })
+    }
+    
     await subject.save()
     console.log(`✅ ${type} uploaded to subject ${subject._id}`)
     res.json(subject)
   } catch (err) {
     console.error('❌ Upload file error:', err.message)
-    res.status(500).json({ msg: err.message })
+    console.error('❌ Full error:', err)
+    res.status(500).json({ msg: err.message, error: err.toString() })
   }
 })
 

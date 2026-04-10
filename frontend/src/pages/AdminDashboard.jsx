@@ -81,25 +81,29 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try { 
+      console.log('👥 Fetching users...')
       const { data } = await api.get('/users')
+      console.log(`✅ Loaded ${data.length} users:`, data)
       setUsers(data)
       setError('')
     }
     catch (err) { 
-      console.error(err)
-      setError('Failed to load users')
+      console.error('❌ Failed to load users:', err.response?.data || err.message)
+      setError('Failed to load users: ' + (err.response?.data?.msg || err.message))
     }
   }
 
   const fetchSubjects = async () => {
     try { 
+      console.log('📚 Fetching subjects...')
       const { data } = await api.get('/subjects')
+      console.log(`✅ Loaded ${data.length} subjects:`, data)
       setSubjects(data)
       setError('')
     }
     catch (err) { 
-      console.error(err)
-      setError('Failed to load subjects')
+      console.error('❌ Failed to load subjects:', err.response?.data || err.message)
+      setError('Failed to load subjects: ' + (err.response?.data?.msg || err.message))
     }
   }
 
@@ -166,6 +170,7 @@ export default function AdminDashboard() {
           setUploading(false)
           return
         }
+        console.log('📹 Uploading video:', { title: uploadTitle, url: uploadUrl })
         await api.post(`/subjects/${uploadSubject._id}/video`, { title: uploadTitle, url: uploadUrl })
       } else if (uploadModal === 'image') {
         if (!uploadFile) {
@@ -173,6 +178,7 @@ export default function AdminDashboard() {
           setUploading(false)
           return
         }
+        console.log('🖼️ Uploading image:', uploadFile.name)
         const fd = new FormData()
         fd.append('image', uploadFile)
         await api.post(`/subjects/${uploadSubject._id}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -182,10 +188,12 @@ export default function AdminDashboard() {
           setUploading(false)
           return
         }
+        console.log('📄 Uploading file:', { title: uploadTitle, type: uploadModal, file: uploadFile.name })
         const fd = new FormData()
         fd.append('file', uploadFile)
         fd.append('title', uploadTitle)
         fd.append('type', uploadModal)
+        console.log('📋 FormData contents:', { title: uploadTitle, type: uploadModal })
         await api.post(`/subjects/${uploadSubject._id}/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       }
       await fetchSubjects()
@@ -194,7 +202,7 @@ export default function AdminDashboard() {
       closeUploadModal()
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) { 
-      console.error(err)
+      console.error('❌ Upload failed:', err.response?.data || err.message)
       setError(err.response?.data?.msg || 'Upload failed')
       setSuccess('')
     }
