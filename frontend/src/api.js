@@ -7,12 +7,22 @@ import axios from 'axios'
  * Axios instance configured for JWT authentication and CORS
  */
 
-// Get API base URL from environment variables
-// Fallback to production URL if env var not set
-const API_URL = import.meta.env.VITE_API_URL || 'https://cozy-fulfillment-production.up.railway.app'
+// Determine API URL based on environment
+let API_URL
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  // Development environment - use localhost backend
+  API_URL = 'http://localhost:5000'
+} else if (import.meta.env.VITE_API_URL) {
+  // Use env variable if set
+  API_URL = import.meta.env.VITE_API_URL
+} else {
+  // Production fallback
+  API_URL = 'https://genbyte-production.up.railway.app'
+}
 
 console.log('🔌 API Base URL:', API_URL)
 console.log('🌍 Frontend Origin:', window.location.origin)
+console.log('🌐 Hostname:', window.location.hostname)
 
 /**
  * Create axios instance with base configuration
