@@ -53,56 +53,80 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
 // UPLOAD file to subject (summary or exam)
 router.post('/:id/upload', auth, isAdmin, upload.single('file'), async (req, res) => {
   try {
-    console.log('📤 Upload endpoint called for subject:', req.params.id)
-    console.log('   req.body:', req.body)
-    console.log('   req.file:', req.file ? `✓ File: ${req.file.filename} (${req.file.size} bytes)` : '❌ No file')
+    console.log('\n📤 ===== UPLOAD REQUEST =====')
+    console.log('Subject ID:', req.params.id)
+    console.log('Body:', req.body)
+    console.log('File received:', req.file ? {
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname,
+      encoding: req.file.encoding,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path,
+      url: req.file.secure_url
+    } : 'NO FILE')
+    console.log('===========================\n')
     
     const { type, title } = req.body
     
+    // Validate inputs
     if (!type || !title) {
-      console.error('❌ Missing type or title:', { type, title })
-      return res.status(400).json({ msg: 'Missing type or title' })
+      console.error('❌ Missing required fields - type:', type, 'title:', title)
+      return res.status(400).json({ msg: 'Missing type or title field' })
     }
     
     if (!req.file) {
-      console.error('❌ No file in request')
-      return res.status(400).json({ msg: 'No file uploaded' })
+      console.error('❌ No file uploaded')
+      return res.status(400).json({ msg: 'No file uploaded - please select a PDF' })
     }
     
-    const url = req.file.path
-    console.log(`   ✓ File URL from Cloudinary: ${url}`)
+    // Get file URL from Cloudinary response
+    const url = req.file.secure_url || req.file.path
     
+    if (!url) {
+      console.error('❌ No URL from Cloudinary:', req.file)
+      return res.status(500).json({ msg: 'Failed to upload to cloud storage' })
+    }
+    
+    console.log(`✓ File URL: ${url}`)
+    
+    // Find and update subject
     const subject = await Subject.findById(req.params.id)
     if (!subject) {
       console.error('❌ Subject not found:', req.params.id)
       return res.status(404).json({ msg: 'Subject not found' })
     }
     
-    console.log(`   ✓ Subject found: ${subject.name}`)
+    console.log(`✓ Subject found: ${subject.name}`)
     
+    // Add to appropriate array
     if (type === 'summary') {
       subject.summaries.push({ title, url })
-      console.log(`   ✓ Added summary: ${title}`)
+      console.log(`✓ Added summary: "${title}"`)
     }
     else if (type === 'exam') {
       subject.exams.push({ title, url })
-      console.log(`   ✓ Added exam: ${title}`)
+      console.log(`✓ Added exam: "${title}"`)
     }
     else {
       console.error('❌ Invalid type:', type)
-      return res.status(400).json({ msg: 'Invalid type. Must be summary or exam' })
+      return res.status(400).json({ msg: 'Type must be "summary" or "exam"' })
     }
     
+    // Save to MongoDB
     await subject.save()
-    console.log(`✅ ${type} uploaded successfully to subject ${subject._id}`)
+    console.log(`✅ Successfully saved ${type} to subject ${subject._id}\n`)
+    
     res.json(subject)
   } catch (err) {
-    console.error('❌ Upload file error:', err.message)
-    console.error('❌ Full error stack:', err)
+    console.error('\n❌ ===== UPLOAD ERROR =====')
+    console.error('Error:', err.message)
+    console.error('Stack:', err.stack)
+    console.error('============================\n')
+    
     res.status(500).json({ 
-      msg: 'Upload failed', 
-      error: err.message,
-      details: process.env.NODE_ENV === 'development' ? err.toString() : undefined
+      msg: 'Upload failed: ' + err.message,
+      error: err.message
     })
   }
 })

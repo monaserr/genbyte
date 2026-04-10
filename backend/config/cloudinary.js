@@ -16,14 +16,52 @@ cloudinary.config({
 console.log('✅ Cloudinary configured')
 
 const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'genbyte',
-    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
-    resource_type: 'auto'
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    console.log(`📁 Uploading file: ${file.originalname}`)
+    
+    // Determine folder and resource type based on file
+    let folder = 'genbyte'
+    let resource_type = 'auto'
+    
+    // Handle based on file type
+    if (file.mimetype.startsWith('image/')) {
+      folder = 'genbyte/images'
+      resource_type = 'image'
+    } else if (file.mimetype === 'application/pdf') {
+      folder = 'genbyte/pdfs'
+      resource_type = 'auto'
+    }
+    
+    console.log(`   Folder: ${folder}, Type: ${resource_type}`)
+    
+    return {
+      folder: folder,
+      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
+      resource_type: resource_type,
+      public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '')}`
+    }
   }
 })
 
-const upload = multer({ storage })
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB max
+  },
+  fileFilter: (req, file, cb) => {
+    console.log(`🔍 File filter - Name: ${file.originalname}, Type: ${file.mimetype}`)
+    
+    // Allowed mime types
+    const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/jpg']
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      console.error(`❌ File type not allowed: ${file.mimetype}`)
+      cb(new Error(`File type not allowed: ${file.mimetype}`))
+    }
+  }
+})
 
 module.exports = { cloudinary, upload }

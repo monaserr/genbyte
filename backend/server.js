@@ -118,20 +118,26 @@ app.use('/api/users', require('./routes/users'))
 app.use((err, req, res, next) => {
   // Check if it's a multer error
   if (err.name === 'MulterError') {
-    console.error('❌ Multer error:', err.message)
+    console.error('❌ Multer error:', err.code, err.message)
     if (err.code === 'FILE_TOO_LARGE') {
-      return res.status(413).json({ msg: 'File too large' })
+      return res.status(413).json({ msg: 'File too large (max 100MB)' })
     }
-    if (err.code === 'LIMIT_PART_COUNT') {
-      return res.status(400).json({ msg: 'Too many parts' })
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ msg: 'Too many files' })
     }
+    return res.status(400).json({ msg: 'File upload error: ' + err.message })
+  }
+  
+  // Check if it's a file filter error
+  if (err.message && err.message.includes('not allowed')) {
+    console.error('❌ File type error:', err.message)
     return res.status(400).json({ msg: err.message })
   }
   
   // Check if it's a Cloudinary error
   if (err.message && err.message.includes('Cloudinary')) {
     console.error('❌ Cloudinary error:', err.message)
-    return res.status(500).json({ msg: 'Cloud storage error', error: err.message })
+    return res.status(500).json({ msg: 'Cloud storage error: ' + err.message })
   }
   
   // Pass to next error handler
