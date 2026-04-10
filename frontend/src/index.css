@@ -18,7 +18,7 @@
 
 [data-theme="light"] {
   --bg: #f8fafc;          /* خلفية فاتحة جدًا */
-  --bg2: #eef2f7;         /* لون ثانوي خفيف */
+  --bg2: #5a9ae9;         /* لون ثانوي خفيف */
   --surface: #ffffff;     /* الكروت والخلفيات */
   --border: #e2e8f0;      /* حدود خفيفة */
   --text: #0f172a;        /* نص غامق وواضح */
@@ -27,6 +27,7 @@
   --accent2: #7c3aed;     
   --accent-light: rgba(139,92,246,.1);
   --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.08);
+  
   --shadow-lg: 0 4px 6px rgba(0,0,0,.08), 0 10px 25px rgba(0,0,0,.1);
 }
 
