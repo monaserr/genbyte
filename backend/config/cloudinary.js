@@ -17,25 +17,46 @@ console.log('✅ Cloudinary configured')
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'genbyte',
-    resource_type: 'auto',
-    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
-    public_id: (req, file) => {
-      console.log(`📁 Uploading file: ${file.originalname}`)
-      return `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_\-]/g, '_')}`
+
+  // 🔥 الحل المهم: تحديد النوع حسب الملف
+  params: async (req, file) => {
+    console.log(`📁 Uploading file: ${file.originalname}`)
+
+    const isPDF = file.mimetype === 'application/pdf'
+
+    return {
+      folder: 'genbyte',
+
+      // ✅ مهم جدًا
+      resource_type: isPDF ? 'raw' : 'image',
+
+      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
+
+      public_id: `${Date.now()}_${file.originalname
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[^a-zA-Z0-9_\-]/g, '_')}`
     }
   }
 })
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
+
   limits: {
     fileSize: 100 * 1024 * 1024
   },
+
   fileFilter: (req, file, cb) => {
     console.log(`🔍 File filter - Name: ${file.originalname}, Type: ${file.mimetype}`)
-    const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/jpg']
+
+    const allowedMimes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/jpg'
+    ]
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true)
     } else {
