@@ -6,7 +6,7 @@ import api from '../api'
 
 export default function Login() {
   const [tab, setTab] = useState('signin')
-  const [form, setForm] = useState({ name: '', email: '', password: '', year: 'Year 1', adminCode: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', year: 'Year 1' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { login } = useAuth()
@@ -16,7 +16,7 @@ export default function Login() {
 
   const handleTabChange = (newTab) => {
     setTab(newTab)
-    setForm({ name: '', email: '', password: '', year: 'Year 1', adminCode: '' })
+    setForm({ name: '', email: '', password: '', year: 'Year 1' })
     setError('')
   }
 
@@ -57,34 +57,13 @@ export default function Login() {
         return
       }
     }
-
-    if (tab === 'admin') {
-      if (!form.name?.trim()) {
-        setError('Full name is required')
-        return
-      }
-      
-      if (!form.adminCode?.trim()) {
-        setError('Admin code is required')
-        return
-      }
-    }
     
     setLoading(true)
     try {
-      let url, submitData
-      
-      if (tab === 'signin') {
-        url = '/auth/login'
-        submitData = { email: form.email, password: form.password }
-      } else if (tab === 'admin') {
-        url = '/auth/register-admin'
-        submitData = { name: form.name, email: form.email, password: form.password, adminCode: form.adminCode }
-      } else {
-        url = '/auth/register'
-        submitData = form
-      }
-      
+      const url = tab === 'signin' ? '/auth/login' : '/auth/register'
+      const submitData = tab === 'signin' 
+        ? { email: form.email, password: form.password }
+        : form
       const { data } = await api.post(url, submitData)
       login(data.user, data.token)
       nav(data.user.role === 'admin' ? '/admin' : '/student')
@@ -187,7 +166,7 @@ export default function Login() {
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255,255,255,.1)'
         }}>
-          {['signin', 'signup', 'admin'].map(t => (
+          {['signin', 'signup'].map(t => (
             <button 
               key={t} 
               onClick={() => handleTabChange(t)} 
@@ -195,7 +174,7 @@ export default function Login() {
                 flex: 1, 
                 padding: '.5rem', 
                 borderRadius: 9, 
-                fontSize: '.75rem', 
+                fontSize: '.82rem', 
                 fontWeight: 500, 
                 cursor: 'pointer', 
                 border: 'none', 
@@ -205,13 +184,12 @@ export default function Login() {
                 color: tab === t ? 'var(--text)' : 'rgba(255,255,255,.4)',
                 boxShadow: tab === t ? '0 4px 12px rgba(99,102,241,.2)' : 'none'
               }}>
-              {t === 'signin' ? 'Sign In' : t === 'signup' ? 'Sign Up' : '👨‍💼 Admin'}
+              {t === 'signin' ? 'Sign In' : 'Sign Up'}
             </button>
           ))}
         </div>
 
         {tab === 'signup' && <input style={inp} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} onFocus={e => e.target.style.cssText = Object.entries(inpFocus).map(([k,v]) => `${k}:${v}`).join(';')} onBlur={e => e.target.style.cssText = Object.entries(inp).map(([k,v]) => `${k}:${v}`).join(';')} />}
-        {tab === 'admin' && <input style={inp} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} onFocus={e => e.target.style.cssText = Object.entries(inpFocus).map(([k,v]) => `${k}:${v}`).join(';')} onBlur={e => e.target.style.cssText = Object.entries(inp).map(([k,v]) => `${k}:${v}`).join(';')} />}
         <input 
           style={inp} 
           name="email" 
@@ -234,18 +212,6 @@ export default function Login() {
             <option>Year 1</option><option>Year 2</option><option>Year 3</option><option>Year 4</option>
           </select>
         )}
-        {tab === 'admin' && (
-          <input 
-            style={inp} 
-            name="adminCode" 
-            type="password" 
-            placeholder="Admin Code"
-            value={form.adminCode} 
-            onChange={handleChange}
-            onFocus={e => e.target.style.cssText = Object.entries(inpFocus).map(([k,v]) => `${k}:${v}`).join(';')} 
-            onBlur={e => e.target.style.cssText = Object.entries(inp).map(([k,v]) => `${k}:${v}`).join(';')}
-          />
-        )}
         <input 
           style={inp} 
           name="password" 
@@ -266,7 +232,7 @@ export default function Login() {
           onMouseEnter={e => !loading && (e.target.style.transform = 'translateY(-2px)', e.target.style.boxShadow = '0 12px 32px rgba(99,102,241,.35)')}
           onMouseLeave={e => (e.target.style.transform = 'translateY(0)', e.target.style.boxShadow = '0 8px 24px rgba(99,102,241,.25)')}
         >
-          {loading ? 'Loading...' : tab === 'signin' ? 'Sign In' : tab === 'signup' ? 'Create Account' : 'Register as Admin'}
+          {loading ? 'Loading...' : tab === 'signin' ? 'Sign In' : 'Create Account'}
         </button>
 
         <div style={{ textAlign: 'center', margin: '1rem 0', fontSize: '.75rem', color: 'rgba(255,255,255,.35)' }}>or</div>
