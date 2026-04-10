@@ -193,12 +193,12 @@ export default function StudentDashboard() {
               ))}
             </div>
             {loadingMaterials && subjects.length === 0 ? (
-              <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+              <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '1.5rem', animation: 'spin 1s linear infinite' }}>⏳</div>
                 <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>Loading subjects...</div>
               </div>
             ) : subjects.length === 0 ? (
-              <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+              <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>📭</div>
                 <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No subjects yet</div>
                 <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', maxWidth: 280, lineHeight: 1.6 }}>Subjects will appear here once your admin adds them</div>
@@ -206,7 +206,7 @@ export default function StudentDashboard() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '1rem' }}>
                 {subjects.map(s => (
-                  <div key={s._id} style={{ ...glass, position: 'relative', overflow: 'hidden', transition: 'all .3s ease' }}
+                  <div key={s._id} style={{ ...theme.glass, position: 'relative', overflow: 'hidden', transition: 'all .3s ease' }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-4px)', e.currentTarget.style.boxShadow = '0 12px 32px rgba(99,102,241,.2)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = 'none')}
                   >
@@ -246,7 +246,7 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>✅ My Tasks</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Stay on top of your study plan</p>
             </div>
-            <div style={glass}>
+            <div style={theme.glass}>
               <div style={{ display: 'flex', gap: '.6rem', marginBottom: '1.2rem', flexWrap: 'wrap' }}>
                 <input value={todoInput} onChange={e => setTodoInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTodo()} placeholder="Add a new task..." style={{ flex: 1, minWidth: 180, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 11, padding: '.65rem .9rem', color: 'var(--text)', fontSize: '.85rem', outline: 'none', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }} 
                   onFocus={e => (e.target.style.background = 'rgba(255,255,255,.12)', e.target.style.borderColor = 'rgba(129,140,248,.3)', e.target.style.boxShadow = '0 0 0 3px rgba(129,140,248,.1)')}
@@ -283,7 +283,7 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>📋 Assignments</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Tasks assigned by your instructors</p>
             </div>
-            <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+            <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
               <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
               <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
               <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Your instructor will post assignments here</div>
@@ -298,7 +298,7 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>🧮 GPA Calculator</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Calculate your semester GPA</p>
             </div>
-            <div style={glass}>
+            <div style={theme.glass}>
               <div style={{ overflowX: 'auto' }}>
                 {gpaRows.map((row) => (
                   <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '2fr 70px 100px 36px', gap: '.5rem', marginBottom: '.6rem', alignItems: 'end', minWidth: 320 }}>

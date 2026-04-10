@@ -8,13 +8,19 @@ const { upload } = require('../config/cloudinary')
 router.get('/', async (req, res) => {
   try {
     const { year } = req.query
+    console.log(`📖 GET /subjects called - year filter: ${year || 'ALL'}`)
+    
     const filter = year ? { year } : {}
+    console.log('📋 Query filter:', filter)
+    
     const subjects = await Subject.find(filter).lean()
     console.log(`✅ Fetched ${subjects.length} subjects${year ? ` for ${year}` : ''}`)
+    
     res.json(subjects)
   } catch (err) {
     console.error('❌ Fetch subjects error:', err.message)
-    res.status(500).json({ msg: err.message })
+    console.error('❌ Full error:', err)
+    res.status(500).json({ msg: err.message, error: err.toString() })
   }
 })
 

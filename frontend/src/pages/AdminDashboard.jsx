@@ -15,7 +15,7 @@ const avatarColors = ['linear-gradient(135deg,#6366f1,#818cf8)','linear-gradient
 const getStyles = () => {
   try {
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-    console.log('getStyles() called, isDark:', isDark)
+
   if (isDark) {
     return {
       glass: { background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 20, padding: '1.5rem' },
@@ -46,9 +46,7 @@ const getStyles = () => {
 }
 
 export default function AdminDashboard() {
-  console.log('AdminDashboard rendering...')
   const { user, logout } = useAuth()
-  console.log('useAuth returned:', { user, logout })
   const [section, setSection] = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [users, setUsers] = useState([])
@@ -66,6 +64,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [styles, setStyles] = useState(getStyles())
+  const { glass, glassSm, inp, btnPrimary, btnDanger, btnSm } = styles
 
   // Update theme when it changes
   useEffect(() => {
