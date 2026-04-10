@@ -19,6 +19,20 @@ const subjectSchema = new mongoose.Schema({
   videos: [{ 
     title: { type: String, required: true },
     url: { type: String, required: true }
+  }],
+  assignments: [{
+    id: { type: String, default: () => Date.now().toString() },
+    title: { type: String, required: true },
+    description: { type: String },
+    dueDate: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  links: [{
+    id: { type: String, default: () => Date.now().toString() },
+    name: { type: String, required: true },
+    url: { type: String, required: true },
+    icon: { type: String, default: '🔗' },
+    createdAt: { type: Date, default: Date.now }
   }]
 }, { timestamps: true })
 

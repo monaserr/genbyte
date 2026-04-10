@@ -141,16 +141,96 @@ export default function AdminDashboard() {
     catch (err) { console.log(err) }
   }
 
-  const addAssignment = () => {
-    if (!form.title) return
-    setAssignments([...assignments, { id: Date.now(), title: `${form.subject ? form.subject + ' — ' : ''}${form.title}`, desc: form.desc || '', due: form.due || 'TBA', color: '#a855f7' }])
-    closeModal()
+  const addAssignment = async () => {
+    if (!form.title || !form.subject) {
+      setError('Please select a subject and enter a title')
+      return
+    }
+    
+    try {
+      console.log('📋 Adding assignment:', form)
+      const subject = subjects.find(s => s._id === form.subject)
+      if (!subject) {
+        setError('Subject not found')
+        return
+      }
+      
+      const { data } = await api.post(`/subjects/${form.subject}/assignment`, {
+        title: form.title,
+        description: form.desc || '',
+        dueDate: form.due || 'TBA'
+      })
+      
+      // Update subjects list with updated subject
+      setSubjects(subjects.map(s => s._id === form.subject ? data : s))
+      setSuccess('Assignment created successfully!')
+      setError('')
+      closeModal()
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('❌ Failed to add assignment:', err)
+      setError(err.response?.data?.msg || 'Failed to create assignment')
+      setSuccess('')
+    }
   }
 
-  const addLink = () => {
-    if (!form.name) return
-    setLinks([...links, { id: Date.now(), icon: form.icon || '🔗', name: form.name, url: form.url || '' }])
-    closeModal()
+  const addLink = async () => {
+    if (!form.name || !form.url || !form.subject) {
+      setError('Please select a subject and fill all fields')
+      return
+    }
+    
+    try {
+      console.log('🔗 Adding link:', form)
+      const subject = subjects.find(s => s._id === form.subject)
+      if (!subject) {
+        setError('Subject not found')
+        return
+      }
+      
+      const { data } = await api.post(`/subjects/${form.subject}/link`, {
+        name: form.name,
+        url: form.url,
+        icon: form.icon || '🔗'
+      })
+      
+      // Update subjects list with updated subject
+      setSubjects(subjects.map(s => s._id === form.subject ? data : s))
+      setSuccess('Link created successfully!')
+      setError('')
+      closeModal()
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('❌ Failed to add link:', err)
+      setError(err.response?.data?.msg || 'Failed to create link')
+      setSuccess('')
+    }
+  }
+
+  const deleteAssignment = async (subjectId, assignmentId) => {
+    try {
+      console.log(`🗑️ Deleting assignment ${assignmentId} from subject ${subjectId}`)
+      const { data } = await api.delete(`/subjects/${subjectId}/assignment/${assignmentId}`)
+      setSubjects(subjects.map(s => s._id === subjectId ? data : s))
+      setSuccess('Assignment deleted')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('❌ Failed to delete assignment:', err)
+      setError('Failed to delete assignment')
+    }
+  }
+
+  const deleteLink = async (subjectId, linkId) => {
+    try {
+      console.log(`🗑️ Deleting link ${linkId} from subject ${subjectId}`)
+      const { data } = await api.delete(`/subjects/${subjectId}/link/${linkId}`)
+      setSubjects(subjects.map(s => s._id === subjectId ? data : s))
+      setSuccess('Link deleted')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('❌ Failed to delete link:', err)
+      setError('Failed to delete link')
+    }
   }
 
   const openUploadModal = (subject, type) => {
@@ -376,22 +456,33 @@ export default function AdminDashboard() {
               </div>
               <button style={btnPrimary} onClick={() => openModal('assignment')}>+ Add Assignment</button>
             </div>
-            {assignments.length === 0 ? (
+            {subjects.length === 0 ? (
               <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
-                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
+                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No subjects yet - add subjects first</div>
               </div>
             ) : (
-              <div style={glass}>
-                {assignments.map(a => (
-                  <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem', padding: '.8rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0, marginTop: 5 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.82rem', fontWeight: 600, marginBottom: '.18rem' }}>{a.title}</div>
-                      <div style={{ fontSize: '.71rem', color: 'rgba(255,255,255,.38)' }}>{a.desc}</div>
-                      <div style={{ fontSize: '.67rem', fontWeight: 600, marginTop: '.25rem', color: a.color }}>⏰ Due: {a.due}</div>
-                    </div>
-                    <button style={btnDanger} onClick={() => setAssignments(assignments.filter(x => x.id !== a.id))}>Delete</button>
+              <div>
+                {subjects.map(subject => (
+                  <div key={subject._id} style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: '.9rem', fontWeight: 700, marginBottom: '.5rem', color: 'rgba(255,255,255,.6)' }}>{subject.name}</div>
+                    {subject.assignments && subject.assignments.length > 0 ? (
+                      <div style={glass}>
+                        {subject.assignments.map(a => (
+                          <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem', padding: '.8rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7', flexShrink: 0, marginTop: 5 }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '.82rem', fontWeight: 600, marginBottom: '.18rem' }}>{a.title}</div>
+                              <div style={{ fontSize: '.71rem', color: 'rgba(255,255,255,.38)' }}>{a.description}</div>
+                              <div style={{ fontSize: '.67rem', fontWeight: 600, marginTop: '.25rem', color: '#a855f7' }}>⏰ Due: {a.dueDate}</div>
+                            </div>
+                            <button style={btnDanger} onClick={() => deleteAssignment(subject._id, a.id)}>Delete</button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.25)', padding: '.5rem' }}>No assignments</div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -409,21 +500,32 @@ export default function AdminDashboard() {
               </div>
               <button style={btnPrimary} onClick={() => openModal('link')}>+ Add Link</button>
             </div>
-            {links.length === 0 ? (
+            {subjects.length === 0 ? (
               <div style={{ ...glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
                 <div style={{ fontSize: '2.5rem', opacity: .3 }}>🔗</div>
-                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No links yet</div>
+                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No subjects yet - add subjects first</div>
               </div>
             ) : (
-              <div style={glass}>
-                {links.map(l => (
-                  <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.75rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
-                    <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{l.icon}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.83rem', fontWeight: 500 }}>{l.name}</div>
-                      <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.url}</div>
-                    </div>
-                    <button style={btnDanger} onClick={() => setLinks(links.filter(x => x.id !== l.id))}>Delete</button>
+              <div>
+                {subjects.map(subject => (
+                  <div key={subject._id} style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: '.9rem', fontWeight: 700, marginBottom: '.5rem', color: 'rgba(255,255,255,.6)' }}>{subject.name}</div>
+                    {subject.links && subject.links.length > 0 ? (
+                      <div style={glass}>
+                        {subject.links.map(l => (
+                          <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.75rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
+                            <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{l.icon}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '.83rem', fontWeight: 500 }}>{l.name}</div>
+                              <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.url}</div>
+                            </div>
+                            <button style={btnDanger} onClick={() => deleteLink(subject._id, l.id)}>Delete</button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.25)', padding: '.5rem' }}>No links</div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -466,12 +568,16 @@ export default function AdminDashboard() {
 
             {modal === 'assignment' && <>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.3rem', color: 'var(--text)' }}>📋 Add Assignment</h3>
+              <div style={{ marginBottom: '.85rem' }}>
+                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Select Subject</div>
+                <select style={inp} name="subject" onChange={handleForm} defaultValue="">
+                  <option value="">-- Choose a subject --</option>
+                  {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                </select>
+              </div>
               <div style={{ marginBottom: '.85rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Title</div><input style={inp} name="title" placeholder="e.g. Linked List Implementation" onChange={handleForm} /></div>
               <div style={{ marginBottom: '.85rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Description</div><input style={inp} name="desc" placeholder="Brief description..." onChange={handleForm} /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.85rem', marginBottom: '1rem' }}>
-                <div><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Subject</div><input style={inp} name="subject" placeholder="e.g. Data Structures" onChange={handleForm} /></div>
-                <div><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Due Date</div><input style={inp} name="due" type="date" onChange={handleForm} /></div>
-              </div>
+              <div style={{ marginBottom: '1rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Due Date</div><input style={inp} name="due" type="date" onChange={handleForm} /></div>
               <div style={{ display: 'flex', gap: '.7rem', justifyContent: 'flex-end' }}>
                 <button onClick={closeModal} style={{ background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.6)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 11, padding: '.55rem 1.1rem', fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
                   onMouseEnter={e => (e.target.style.background = 'rgba(255,255,255,.15)')}
@@ -486,6 +592,13 @@ export default function AdminDashboard() {
 
             {modal === 'link' && <>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.3rem', color: 'var(--text)' }}>🔗 Add University Link</h3>
+              <div style={{ marginBottom: '.85rem' }}>
+                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Select Subject</div>
+                <select style={inp} name="subject" onChange={handleForm} defaultValue="">
+                  <option value="">-- Choose a subject --</option>
+                  {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                </select>
+              </div>
               <div style={{ marginBottom: '.85rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Link Name</div><input style={inp} name="name" placeholder="e.g. Student Portal" onChange={handleForm} /></div>
               <div style={{ marginBottom: '.85rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>URL</div><input style={inp} name="url" placeholder="https://..." onChange={handleForm} /></div>
               <div style={{ marginBottom: '1rem' }}><div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginBottom: '.35rem', fontWeight: 600 }}>Icon (emoji)</div><input style={{ ...inp, width: 90, marginBottom: 0 }} name="icon" placeholder="🎓" onChange={handleForm} /></div>

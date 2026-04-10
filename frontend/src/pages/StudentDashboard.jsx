@@ -283,11 +283,45 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>📋 Assignments</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Tasks assigned by your instructors</p>
             </div>
-            <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
-              <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
-              <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
-              <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Your instructor will post assignments here</div>
-            </div>
+            {subjects.length === 0 ? (
+              <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+                <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
+                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
+                <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Your instructor will post assignments here</div>
+              </div>
+            ) : (
+              <div>
+                {subjects.filter(s => s.assignments?.length > 0).length === 0 ? (
+                  <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+                    <div style={{ fontSize: '2.5rem', opacity: .3 }}>📋</div>
+                    <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No assignments yet</div>
+                    <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Your instructor will post assignments here</div>
+                  </div>
+                ) : (
+                  <div>
+                    {subjects.map(subject => (
+                      subject.assignments && subject.assignments.length > 0 && (
+                        <div key={subject._id} style={{ marginBottom: '1.5rem' }}>
+                          <div style={{ fontSize: '.9rem', fontWeight: 700, marginBottom: '.5rem', color: 'rgba(255,255,255,.6)' }}>{subject.name}</div>
+                          <div style={theme.glass}>
+                            {subject.assignments.map(a => (
+                              <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem', padding: '.8rem 1rem', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, marginBottom: '.5rem' }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7', flexShrink: 0, marginTop: 5 }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: '.82rem', fontWeight: 600, marginBottom: '.18rem' }}>{a.title}</div>
+                                  <div style={{ fontSize: '.71rem', color: 'rgba(255,255,255,.38)' }}>{a.description}</div>
+                                  <div style={{ fontSize: '.67rem', fontWeight: 600, marginTop: '.25rem', color: '#a855f7' }}>⏰ Due: {a.dueDate}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -345,24 +379,41 @@ export default function StudentDashboard() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>🔗 University Links</h2>
               <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Official resources</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: '.75rem' }}>
-              {[
-                { icon: '🎓', name: 'Student Portal', desc: 'Benha University' },
-                { icon: '📅', name: 'Schedule', desc: 'Academic calendar' },
-                { icon: '📋', name: 'Exam Results', desc: 'Grades & transcripts' },
-                { icon: '📧', name: 'Uni Email', desc: 'Official mail' },
-                { icon: '📖', name: 'E-Library', desc: 'Digital resources' },
-                { icon: '🏛️', name: 'Faculty Site', desc: 'Dept. announcements' },
-              ].map((l, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, padding: '1rem', display: 'flex', alignItems: 'center', gap: '.75rem', cursor: 'pointer' }}>
-                  <span style={{ fontSize: '1.25rem' }}>{l.icon}</span>
-                  <div>
-                    <div style={{ fontSize: '.82rem', fontWeight: 600 }}>{l.name}</div>
-                    <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)' }}>{l.desc}</div>
+            {subjects.length === 0 ? (
+              <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+                <div style={{ fontSize: '2.5rem', opacity: .3 }}>🔗</div>
+                <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No links yet</div>
+              </div>
+            ) : (
+              <div>
+                {subjects.filter(s => s.links?.length > 0).length === 0 ? (
+                  <div style={{ ...theme.glass, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', textAlign: 'center', gap: '.75rem' }}>
+                    <div style={{ fontSize: '2.5rem', opacity: .3 }}>🔗</div>
+                    <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>No links yet</div>
+                    <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.25)', lineHeight: 1.6 }}>Your instructor will add links here</div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '1rem' }}>
+                    {subjects.map(subject => 
+                      subject.links && subject.links.map(l => (
+                        <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                          <div style={{ background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '.5rem', transition: 'all .2s ease', hover: 'transform scale(1.02)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%' }}>
+                              <span style={{ fontSize: '1.4rem' }}>{l.icon}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</div>
+                                <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)' }}>{subject.name}</div>
+                              </div>
+                            </div>
+                            <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{l.url}</div>
+                          </div>
+                        </a>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
