@@ -18,7 +18,6 @@ console.log('✅ Cloudinary configured')
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
 
-  // 🔥 الحل المهم: تحديد النوع حسب الملف
   params: async (req, file) => {
     console.log(`📁 Uploading file: ${file.originalname}`)
 
@@ -27,7 +26,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: 'genbyte',
 
-      // ✅ مهم جدًا
+      // 🔥 أهم تعديل هنا
       resource_type: isPDF ? 'raw' : 'image',
 
       allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
