@@ -111,6 +111,35 @@ app.use('/api/users', require('./routes/users'))
 
 /**
  * ============================================================
+ * MULTER ERROR HANDLER
+ * ============================================================
+ * Catches file upload errors from multer
+ */
+app.use((err, req, res, next) => {
+  // Check if it's a multer error
+  if (err.name === 'MulterError') {
+    console.error('❌ Multer error:', err.message)
+    if (err.code === 'FILE_TOO_LARGE') {
+      return res.status(413).json({ msg: 'File too large' })
+    }
+    if (err.code === 'LIMIT_PART_COUNT') {
+      return res.status(400).json({ msg: 'Too many parts' })
+    }
+    return res.status(400).json({ msg: err.message })
+  }
+  
+  // Check if it's a Cloudinary error
+  if (err.message && err.message.includes('Cloudinary')) {
+    console.error('❌ Cloudinary error:', err.message)
+    return res.status(500).json({ msg: 'Cloud storage error', error: err.message })
+  }
+  
+  // Pass to next error handler
+  next(err)
+})
+
+/**
+ * ============================================================
  * DATABASE CONNECTION
  * ============================================================
  * Connects to MongoDB Atlas with proper timeouts
