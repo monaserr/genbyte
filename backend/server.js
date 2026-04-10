@@ -87,7 +87,7 @@ app.use((req, res, next) => {
   console.log(`[${timestamp}] ${method.padEnd(6)} ${path} (from: ${origin})`)
   
   // Log request body if present (excluding passwords)
-  if (Object.keys(req.body).length > 0) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const bodyString = JSON.stringify(req.body, null, 2)
     // Hide sensitive data
     const sanitized = bodyString
