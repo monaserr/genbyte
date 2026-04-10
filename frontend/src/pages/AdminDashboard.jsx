@@ -233,6 +233,21 @@ export default function AdminDashboard() {
     }
   }
 
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      console.log(`👤 Updating user ${userId} to role: ${newRole}`)
+      const { data } = await api.put(`/users/${userId}/role`, { role: newRole })
+      setUsers(users.map(u => u._id === userId ? data : u))
+      setSuccess(`User role updated to ${newRole}!`)
+      setError('')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('❌ Failed to update role:', err)
+      setError(err.response?.data?.msg || 'Failed to update role')
+      setSuccess('')
+    }
+  }
+
   const openUploadModal = (subject, type) => {
     setUploadSubject(subject); setUploadModal(type)
     setUploadFile(null); setUploadTitle(''); setUploadUrl('')
@@ -304,6 +319,7 @@ export default function AdminDashboard() {
         { type: 'section', label: 'Overview' },
         { id: 'overview', icon: '📊', label: 'Dashboard' },
         { id: 'users', icon: '👥', label: 'Users', badge: users.length > 0 ? users.length : null, badgeColor: '#f87171' },
+        { id: 'admins', icon: '👨‍💼', label: 'Admin Management' },
         { id: 'analytics', icon: '📈', label: 'Analytics' },
         { type: 'section', label: 'Content' },
         { id: 'subjects', icon: '📚', label: 'Subjects' },
@@ -387,6 +403,59 @@ export default function AdminDashboard() {
                           <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem', whiteSpace: 'nowrap' }}>{u.role}</span>
                         </td>
                         <td style={{ padding: '.65rem 1rem', fontSize: '.75rem', color: 'rgba(255,255,255,.35)', whiteSpace: 'nowrap' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADMIN MANAGEMENT */}
+        {section === 'admins' && (
+          <div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>👨‍💼 Admin Management</h2>
+              <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Promote students to admin role</p>
+            </div>
+            <div style={{ ...glass, padding: 0, overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,.04)' }}>
+                      {['Student','Email','Current Role','Action'].map(h => (
+                        <th key={h} style={{ fontSize: '.68rem', fontWeight: 600, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', padding: '.75rem 1rem', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.length === 0 && <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: '.82rem' }}>No users yet</td></tr>}
+                    {users.map((u, i) => (
+                      <tr key={u._id} style={{ borderTop: '1px solid rgba(255,255,255,.05)' }}>
+                        <td style={{ padding: '.65rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: avatarColors[i % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 700, flexShrink: 0 }}>{getInitials(u.name)}</div>
+                            <span style={{ fontSize: '.82rem', whiteSpace: 'nowrap' }}>{u.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '.65rem 1rem', fontSize: '.78rem', color: 'rgba(255,255,255,.4)', whiteSpace: 'nowrap' }}>{u.email}</td>
+                        <td style={{ padding: '.65rem 1rem' }}>
+                          <span style={{ background: u.role === 'admin' ? 'rgba(168,85,247,.15)' : 'rgba(96,165,250,.12)', color: u.role === 'admin' ? '#a855f7' : '#60a5fa', borderRadius: 99, fontSize: '.65rem', fontWeight: 600, padding: '.2rem .6rem', whiteSpace: 'nowrap' }}>{u.role}</span>
+                        </td>
+                        <td style={{ padding: '.65rem 1rem' }}>
+                          {u.role === 'student' ? (
+                            <button onClick={() => updateUserRole(u._id, 'admin')} style={{ background: 'rgba(168,85,247,.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,.2)', borderRadius: 8, padding: '.35rem .75rem', fontSize: '.72rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
+                              onMouseEnter={e => (e.target.style.background = 'rgba(168,85,247,.25)', e.target.style.transform = 'scale(1.05)')}
+                              onMouseLeave={e => (e.target.style.background = 'rgba(168,85,247,.15)', e.target.style.transform = 'scale(1)')}
+                            >Make Admin</button>
+                          ) : (
+                            <button onClick={() => updateUserRole(u._id, 'student')} style={{ background: 'rgba(248,113,113,.15)', color: '#f87171', border: '1px solid rgba(248,113,113,.2)', borderRadius: 8, padding: '.35rem .75rem', fontSize: '.72rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }}
+                              onMouseEnter={e => (e.target.style.background = 'rgba(248,113,113,.25)', e.target.style.transform = 'scale(1.05)')}
+                              onMouseLeave={e => (e.target.style.background = 'rgba(248,113,113,.15)', e.target.style.transform = 'scale(1)')}
+                            >Revoke Admin</button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
