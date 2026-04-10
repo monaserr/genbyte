@@ -7,16 +7,37 @@ import AnalyticsDashboard from '../components/AnalyticsDashboard'
 import { StaggerContainer, StaggerItem, PageTransition } from '../components/Motion'
 import { useAuth } from '../context/AuthContext'
 
-const glass = { background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 20, padding: '1.5rem' }
-const glassSm = { background: 'rgba(255,255,255,.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, padding: '1.2rem' }
-const inp = { width: '100%', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 11, padding: '.7rem .9rem', color: 'var(--text)', fontSize: '.85rem', outline: 'none', fontFamily: 'inherit', marginBottom: '.85rem', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }
-const btnPrimary = { background: 'linear-gradient(135deg,#6366f1,#818cf8)', color: '#fff', border: 'none', borderRadius: 11, padding: '.7rem 1.3rem', fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', boxShadow: '0 8px 24px rgba(99,102,241,.25)' }
-const btnDanger = { background: 'rgba(248,113,113,.15)', color: '#f87171', border: '1px solid rgba(248,113,113,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }
-const btnSm = { background: 'rgba(168,85,247,.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' }
-
 const icons = ['🗂️','📐','🧬','📊','💡','🧪','🖥️','🔬']
 const colors = ['rgba(129,140,248,.12)','rgba(96,165,250,.12)','rgba(52,211,153,.12)','rgba(251,191,36,.12)','rgba(244,114,182,.12)','rgba(45,212,191,.12)','rgba(168,85,247,.12)','rgba(251,146,60,.12)']
 const avatarColors = ['linear-gradient(135deg,#6366f1,#818cf8)','linear-gradient(135deg,#0891b2,#06b6d4)','linear-gradient(135deg,#be185d,#f472b6)','linear-gradient(135deg,#059669,#34d399)','linear-gradient(135deg,#d97706,#fbbf24)','linear-gradient(135deg,#7c3aed,#a855f7)']
+
+// Helper to get theme-aware styles
+const getStyles = () => {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
+  if (isDark) {
+    return {
+      glass: { background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 20, padding: '1.5rem' },
+      glassSm: { background: 'rgba(255,255,255,.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, padding: '1.2rem' },
+      inp: { width: '100%', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 11, padding: '.7rem .9rem', color: 'var(--text)', fontSize: '.85rem', outline: 'none', fontFamily: 'inherit', marginBottom: '.85rem', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      btnPrimary: { background: 'linear-gradient(135deg,#6366f1,#818cf8)', color: '#fff', border: 'none', borderRadius: 11, padding: '.7rem 1.3rem', fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', boxShadow: '0 8px 24px rgba(99,102,241,.25)' },
+      btnDanger: { background: 'rgba(248,113,113,.15)', color: '#f87171', border: '1px solid rgba(248,113,113,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      btnSm: { background: 'rgba(168,85,247,.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      textMuted: 'rgba(255,255,255,.4)',
+      textSubtle: 'rgba(255,255,255,.25)',
+    }
+  } else {
+    return {
+      glass: { background: 'rgba(15,23,42,.02)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(15,23,42,.08)', borderRadius: 20, padding: '1.5rem' },
+      glassSm: { background: 'rgba(15,23,42,.02)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(15,23,42,.08)', borderRadius: 14, padding: '1.2rem' },
+      inp: { width: '100%', background: '#ffffff', border: '1px solid rgba(15,23,42,.12)', borderRadius: 11, padding: '.7rem .9rem', color: 'var(--text)', fontSize: '.85rem', outline: 'none', fontFamily: 'inherit', marginBottom: '.85rem', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      btnPrimary: { background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', color: '#fff', border: 'none', borderRadius: 11, padding: '.7rem 1.3rem', fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', boxShadow: '0 8px 24px rgba(124,58,237,.25)' },
+      btnDanger: { background: 'rgba(248,113,113,.15)', color: '#dc2626', border: '1px solid rgba(248,113,113,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      btnSm: { background: 'rgba(124,58,237,.12)', color: '#7c3aed', border: '1px solid rgba(124,58,237,.2)', borderRadius: 9, padding: '.35rem .75rem', fontSize: '.73rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s ease', backdropFilter: 'blur(10px)' },
+      textMuted: 'rgba(15,23,42,.6)',
+      textSubtle: 'rgba(15,23,42,.4)',
+    }
+  }
+}
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -36,6 +57,15 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [styles, setStyles] = useState(getStyles())
+
+  // Update theme when it changes
+  useEffect(() => {
+    setStyles(getStyles())
+    const observer = new MutationObserver(() => setStyles(getStyles()))
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   const token = localStorage.getItem('token')
   const headers = { Authorization: `Bearer ${token}` }

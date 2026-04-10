@@ -1,0 +1,102 @@
+/**
+ * LIGHT MODE COLOR OVERRIDES
+ * Replaces all hardcoded rgba(255,255,255,...) colors
+ * with dark mode-aware colors using CSS variables
+ */
+
+[data-theme="light"] {
+  /* Override all inline styles that were using white colors */
+  --inline-text-bright: rgba(15,23,42,.9) !important;
+  --inline-text-muted: rgba(15,23,42,.6) !important;
+  --inline-text-subtle: rgba(15,23,42,.4) !important;
+  --inline-text-faint: rgba(15,23,42,.2) !important;
+  --inline-border: rgba(15,23,42,.1) !important;
+  --inline-bg: rgba(15,23,42,.04) !important;
+}
+
+/* Make text readable in both themes */
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] div {
+  color: var(--text) !important;
+}
+
+/* Light mode specific overrides for problematic components */
+[data-theme="light"] .glass,
+[data-theme="light"] .glass-sm {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Fix glass transparencies */
+[data-theme="light"] [style*="rgba(255,255,255,.06)"],
+[data-theme="light"] [style*="rgba(255,255,255,.07)"],
+[data-theme="light"] [style*="rgba(255,255,255,.08)"],
+[data-theme="light"] [style*="rgba(255,255,255,.1)"],
+[data-theme="light"] [style*="rgba(255,255,255,.12)"] {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Fix text colors that are too light */
+[data-theme="light"] [style*="rgba(255,255,255,.4)"],
+[data-theme="light"] [style*="rgba(255,255,255,.35)"],
+[data-theme="light"] [style*="rgba(255,255,255,.38)"],
+[data-theme="light"] [style*="color: rgba(255,255,255"] {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+
+/* Fix very faint text */
+[data-theme="light"] [style*="rgba(255,255,255,.25)"],
+[data-theme="light"] [style*="rgba(255,255,255,.2)"],
+[data-theme="light"] [style*="rgba(255,255,255,.15)"] {
+  color: rgba(15, 23, 42, 0.5) !important;
+}
+
+/* Fix super faint text that needs to be more visible */
+[data-theme="light"] [style*="rgba(255,255,255,.3)"] {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* Input fixes */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  border-color: #7c3aed;
+  background: #f8f9fc;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Button text visibility */
+[data-theme="light"] button {
+  color: var(--text);
+}
+
+/* Table visibility */
+[data-theme="light"] table th {
+  background: #eaecf5;
+  color: #5b6a8a;
+}
+
+[data-theme="light"] table td {
+  color: #0f172a;
+  border-top-color: #d1d5e8;
+}
+
+/* Modal overlays */
+[data-theme="light"] .overlay {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+/* Animations and transitions stay the same */
+[data-theme="light"] * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}

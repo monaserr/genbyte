@@ -8,8 +8,33 @@ import { useAuth } from '../context/AuthContext'
 
 const grades = { 'A+':4,'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D':1,'F':0 }
 
-const glass = { background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 20, padding: '1.5rem' }
-const glassSm = { background: 'rgba(255,255,255,.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, padding: '1.2rem' }
+// Helper to get theme-aware colors
+const getStyles = () => {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
+  if (isDark) {
+    return {
+      glass: { background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 20, padding: '1.5rem' },
+      glassSm: { background: 'rgba(255,255,255,.07)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, padding: '1.2rem' },
+      textMuted: 'rgba(255,255,255,.4)',
+      textBright: 'rgba(255,255,255,.7)',
+      textSubtle: 'rgba(255,255,255,.25)',
+      inputBg: 'rgba(255,255,255,.08)',
+      inputBorder: 'rgba(255,255,255,.12)',
+      inputBorderFocus: 'rgba(129,140,248,.3)',
+    }
+  } else {
+    return {
+      glass: { background: 'rgba(15,23,42,.02)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(15,23,42,.08)', borderRadius: 20, padding: '1.5rem' },
+      glassSm: { background: 'rgba(15,23,42,.02)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(15,23,42,.08)', borderRadius: 14, padding: '1.2rem' },
+      textMuted: 'rgba(15,23,42,.6)',
+      textBright: 'rgba(15,23,42,.8)',
+      textSubtle: 'rgba(15,23,42,.4)',
+      inputBg: 'rgba(15,23,42,.04)',
+      inputBorder: 'rgba(15,23,42,.12)',
+      inputBorderFocus: 'rgba(124,58,237,.3)',
+    }
+  }
+}
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth()
@@ -28,6 +53,15 @@ export default function StudentDashboard() {
     { id: 1, name: '', credits: 3, grade: 'B' },
     { id: 2, name: '', credits: 3, grade: 'A' },
   ])
+  const [theme, setTheme] = useState(getStyles())
+
+  // Update theme when it changes
+  useEffect(() => {
+    setTheme(getStyles())
+    const observer = new MutationObserver(() => setTheme(getStyles()))
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   // Fetch subjects - callable from anywhere
   const fetchSubjects = async (year = selectedYear) => {
@@ -112,7 +146,7 @@ export default function StudentDashboard() {
           <div>
             <div style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>👋 Welcome back, {user?.name || 'Student'}!</h2>
-              <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)', marginTop: '.25rem' }}>Computing & Bioinformatics Engineering</p>
+              <p style={{ fontSize: '.82rem', color: theme.textMuted, marginTop: '.25rem' }}>Computing & Bioinformatics Engineering</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '.75rem', marginBottom: '1.25rem' }}>
               {[
@@ -121,18 +155,18 @@ export default function StudentDashboard() {
                 { label: 'Subjects', val: subjects.length, color: '#60a5fa' },
                 { label: 'Pending Tasks', val: pendingTodos, color: '#fbbf24' },
               ].map(s => (
-                <div key={s.label} style={glassSm}>
-                  <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.38)', marginBottom: '.5rem' }}>{s.label}</div>
+                <div key={s.label} style={theme.glassSm}>
+                  <div style={{ fontSize: '.68rem', color: theme.textMuted, marginBottom: '.5rem' }}>{s.label}</div>
                   <div style={{ fontSize: '1.75rem', fontWeight: 800, color: s.color }}>{s.val}</div>
                 </div>
               ))}
             </div>
-            <div style={glass}>
+            <div style={theme.glass}>
               <div style={{ fontWeight: 600, marginBottom: '.85rem' }}>✅ Recent Tasks</div>
-              {todos.length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: '.82rem', padding: '1rem' }}>No tasks yet — add some!</div>}
+              {todos.length === 0 && <div style={{ textAlign: 'center', color: theme.textSubtle, fontSize: '.82rem', padding: '1rem' }}>No tasks yet — add some!</div>}
               {todos.slice(0, 3).map(t => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.65rem .9rem', background: 'rgba(255,255,255,.04)', borderRadius: 10, marginBottom: '.4rem', opacity: t.done ? .5 : 1 }}>
-                  <div onClick={() => toggleTodo(t.id)} style={{ width: 18, height: 18, borderRadius: 5, border: t.done ? 'none' : '1.5px solid rgba(255,255,255,.2)', background: t.done ? '#34d399' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', color: '#fff', flexShrink: 0 }}>
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.65rem .9rem', background: theme.textBright === 'rgba(255,255,255,.7)' ? 'rgba(255,255,255,.04)' : 'rgba(15,23,42,.04)', borderRadius: 10, marginBottom: '.4rem', opacity: t.done ? .5 : 1 }}>
+                  <div onClick={() => toggleTodo(t.id)} style={{ width: 18, height: 18, borderRadius: 5, border: t.done ? 'none' : `1.5px solid ${theme.textBright}`, background: t.done ? '#34d399' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', color: '#fff', flexShrink: 0 }}>
                     {t.done ? '✓' : ''}
                   </div>
                   <span style={{ fontSize: '.83rem', textDecoration: t.done ? 'line-through' : 'none' }}>{t.text}</span>
