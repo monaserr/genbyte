@@ -1,4 +1,4 @@
-const cloudinary = require('cloudinary').v2
+/*const cloudinary = require('cloudinary').v2
 const { CloudinaryStorage } = require('multer-storage-cloudinary')
 const multer = require('multer')
 
@@ -65,4 +65,46 @@ const upload = multer({
   }
 })
 
-module.exports = { cloudinary, upload }
+module.exports = { cloudinary, upload }*/
+const cloudinary = require('cloudinary').v2
+const multer = require('multer')
+const fs = require('fs')
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
+// multer temp storage
+const upload = multer({
+  dest: 'uploads/',
+})
+
+// upload function (FIXED)
+const uploadToCloudinary = async (file) => {
+  if (!file) throw new Error('No file provided')
+
+  const isPDF = file.mimetype === 'application/pdf'
+
+  const result = await cloudinary.uploader.upload(file.path, {
+    folder: 'genbyte',
+
+    // مهم
+    resource_type: isPDF ? 'raw' : 'image',
+
+    // 🔥 ده أهم سطر حل المشكلة
+    access_mode: 'public'
+  })
+
+  // delete temp file
+  fs.unlinkSync(file.path)
+
+  return result
+}
+
+module.exports = {
+  cloudinary,
+  upload,
+  uploadToCloudinary
+}
