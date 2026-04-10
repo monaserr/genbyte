@@ -276,7 +276,7 @@ export default function AdminDashboard() {
         console.log('🖼️ Uploading image:', uploadFile.name)
         const fd = new FormData()
         fd.append('image', uploadFile)
-        await api.post(`/subjects/${uploadSubject._id}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.post(`/subjects/${uploadSubject._id}/image`, fd, { headers: { 'Content-Type': undefined } })
       } else {
         if (!uploadFile || !uploadTitle) {
           setError('Please fill in all fields and select a file')
@@ -289,7 +289,7 @@ export default function AdminDashboard() {
         fd.append('title', uploadTitle)
         fd.append('type', uploadModal)
         console.log('📋 FormData contents:', { title: uploadTitle, type: uploadModal })
-        await api.post(`/subjects/${uploadSubject._id}/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.post(`/subjects/${uploadSubject._id}/upload`, fd, { headers: { 'Content-Type': undefined } })
       }
       await fetchSubjects()
       setSuccess(`${uploadModal === 'video' ? 'Video' : uploadModal === 'image' ? 'Image' : 'File'} uploaded successfully!`)
