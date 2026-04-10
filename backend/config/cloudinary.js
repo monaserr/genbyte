@@ -18,30 +18,26 @@ console.log('✅ Cloudinary configured')
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    console.log(`📁 Uploading file: ${file.originalname}`)
-    
-    // Determine folder and resource type based on file
-    let folder = 'genbyte'
-    let resource_type = 'auto'
-    
-    // Handle based on file type
-    if (file.mimetype.startsWith('image/')) {
-      folder = 'genbyte/images'
-      resource_type = 'image'
-    } else if (file.mimetype === 'application/pdf') {
-      folder = 'genbyte/pdfs'
-      resource_type = 'auto'
-    }
-    
-    console.log(`   Folder: ${folder}, Type: ${resource_type}`)
-    
-    return {
-      folder: folder,
-      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
-      resource_type: resource_type,
-      public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_\-]/g, '_')}`
-    }
+  console.log(`📁 Uploading file: ${file.originalname}`)
+  
+  let folder = 'genbyte'
+  let resource_type = 'auto'
+  
+  if (file.mimetype.startsWith('image/')) {
+    folder = 'genbyte/images'
+    resource_type = 'image'
+  } else if (file.mimetype === 'application/pdf') {
+    folder = 'genbyte/pdfs'
+    resource_type = 'raw'  // ← الحل هنا
   }
+  
+  return {
+    folder: folder,
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
+    resource_type: resource_type,
+    public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_\-]/g, '_')}`
+  }
+}
 })
 
 const upload = multer({ 
