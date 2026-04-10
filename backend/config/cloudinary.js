@@ -39,7 +39,7 @@ const storage = new CloudinaryStorage({
       folder: folder,
       allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'gif'],
       resource_type: resource_type,
-      public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '')}`
+      public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_\-]/g, '_')}`
     }
   }
 })
