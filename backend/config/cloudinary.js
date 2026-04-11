@@ -66,6 +66,7 @@ const upload = multer({
 })
 
 module.exports = { cloudinary, upload }*/
+
 const cloudinary = require('cloudinary').v2
 const multer = require('multer')
 const fs = require('fs')
@@ -87,14 +88,15 @@ const uploadToCloudinary = async (file) => {
 
   const isPDF = file.mimetype === 'application/pdf'
 
+  const originalName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')
+
   const result = await cloudinary.uploader.upload(file.path, {
     folder: 'genbyte',
-
-    // مهم
     resource_type: isPDF ? 'raw' : 'image',
-
-    // 🔥 ده أهم سطر حل المشكلة
-    access_mode: 'public'
+    access_mode: 'public',
+    use_filename: true,
+    unique_filename: true,
+    public_id: `${Date.now()}_${originalName}`
   })
 
   // delete temp file
