@@ -41,7 +41,7 @@ export default function StudentDashboard() {
   const [section, setSection] = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [subjects, setSubjects] = useState([])
-  const [selectedYear, setSelectedYear] = useState('Year 1')
+  const [selectedYear, setSelectedYear] = useState(user?.year || 'Year 1')
   const [todos, setTodos] = useState([])
   const [todoInput, setTodoInput] = useState('')
   const [todoFilter, setTodoFilter] = useState('all')
