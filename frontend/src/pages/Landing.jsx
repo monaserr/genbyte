@@ -77,7 +77,7 @@ export default function Landing() {
             padding: '.72rem 1.6rem', fontSize: '.9rem', fontWeight: 600,
             cursor: 'pointer', boxShadow: '0 0 24px rgba(243,159,90,.35)', fontFamily: 'inherit'
           }}>Get Started Free</button>
-          <button onClick={() => nav('/student')} style={{
+          <button onClick={() => nav('/login')} style={{
             background: 'var(--accent-light)', color: 'var(--text)',
             border: '1px solid var(--border)', borderRadius: 10,
             padding: '.72rem 1.6rem', fontSize: '.9rem', cursor: 'pointer', fontFamily: 'inherit'
