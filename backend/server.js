@@ -5,172 +5,49 @@ require('dotenv').config()
 
 const app = express()
 
-/**
- * ============================================================
- * CORS CONFIGURATION - MUST BE FIRST!
- * ============================================================
- * This is the most important middleware. It must come BEFORE
- * any routes and BEFORE body parsing middleware for preflight
- * requests to work properly.
- */
+// ✅ CORS — يقبل أي Vercel URL + localhost
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+]
+
 app.use(cors({
-  // List of allowed origins (frontend URLs)
-  origin: [
-    'https://genbyte-five.vercel.app',  // Production React frontend
-    'http://localhost:5173',             // Vite dev server (standard port)
-    'http://localhost:5174',             // Alternative Vite port
-    'http://127.0.0.1:5173',            // Localhost alias
-    'http://127.0.0.1:5174'             // Localhost alias
-  ],
-  
-  // Allow these HTTP methods
+  origin: (origin, callback) => {
+    // اقبل لو مفيش origin (Postman/curl) أو localhost أو أي Vercel URL
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin)
+    ) {
+      callback(null, true)
+    } else {
+      console.warn('⛔ CORS blocked origin:', origin)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  
-  // Allow these headers in requests
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-    'ngrok-skip-browser-warning'  // For ngrok testing
-  ],
-  
-  // Expose these headers to the frontend
-  exposedHeaders: [
-    'Content-Length',
-    'X-Total-Count'
-  ],
-  
-  // Allow credentials (cookies, authorization headers)
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'ngrok-skip-browser-warning'],
+  exposedHeaders: ['Content-Length', 'X-Total-Count'],
   credentials: true,
-  
-  // How long preflight request can be cached (in seconds)
-  maxAge: 86400  // 24 hours
+  maxAge: 86400
 }))
 
-/**
- * ============================================================
- * BODY PARSING MIDDLEWARE
- * ============================================================
- * Parses incoming request bodies. Must come AFTER CORS,
- * BEFORE routes.
- */
+// Body parsing
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
-// JSON body parser - for application/json requests
-app.use(express.json({ 
-  limit: '50mb',  // Maximum JSON payload size
-  strict: true,
-  type: 'application/json'
-}))
-
-// URL-encoded body parser - for form submissions
-app.use(express.urlencoded({ 
-  limit: '50mb',  // Maximum form data size
-  extended: true,  // Use qs library for parsing
-  parameterLimit: 50000
-}))
-
-/**
- * ============================================================
- * REQUEST LOGGING MIDDLEWARE
- * ============================================================
- * Logs all incoming requests with method, path, and body
- * (helpful for debugging)
- */
+// Request logging
 app.use((req, res, next) => {
-  const timestamp = new Date().toISOString()
   const method = req.method
   const path = req.path
   const origin = req.get('origin') || 'unknown'
-  
-  // Log the request
-  console.log(`[${timestamp}] ${method.padEnd(6)} ${path} (from: ${origin})`)
-  
-  // Log request body if present (excluding passwords)
-  if (req.body && Object.keys(req.body).length > 0) {
-    const bodyString = JSON.stringify(req.body, null, 2)
-    // Hide sensitive data
-    const sanitized = bodyString
-      .replace(/"password":\s*"[^"]*"/g, '"password":"***"')
-      .replace(/"token":\s*"[^"]*"/g, '"token":"***"')
-    console.log('Request Body:', sanitized)
-  }
-  
+  console.log(`[${new Date().toISOString()}] ${method.padEnd(6)} ${path} (from: ${origin})`)
   next()
 })
 
-/**
- * ============================================================
- * ROUTE HANDLERS
- * ============================================================
- * All routes are prefixed with /api/ for organization
- */
-app.use('/api/auth', require('./routes/auth'))
-app.use('/api/subjects', require('./routes/subjects'))
-app.use('/api/users', require('./routes/users'))
-
-/**
- * ============================================================
- * MULTER ERROR HANDLER
- * ============================================================
- * Catches file upload errors from multer
- */
-app.use((err, req, res, next) => {
-  // Check if it's a multer error
-  if (err.name === 'MulterError') {
-    console.error('❌ Multer error:', err.code, err.message)
-    if (err.code === 'FILE_TOO_LARGE') {
-      return res.status(413).json({ msg: 'File too large (max 100MB)' })
-    }
-    if (err.code === 'LIMIT_FILE_COUNT') {
-      return res.status(400).json({ msg: 'Too many files' })
-    }
-    return res.status(400).json({ msg: 'File upload error: ' + err.message })
-  }
-  
-  // Check if it's a file filter error
-  if (err.message && err.message.includes('not allowed')) {
-    console.error('❌ File type error:', err.message)
-    return res.status(400).json({ msg: err.message })
-  }
-  
-  // Check if it's a Cloudinary error
-  if (err.message && err.message.includes('Cloudinary')) {
-    console.error('❌ Cloudinary error:', err.message)
-    return res.status(500).json({ msg: 'Cloud storage error: ' + err.message })
-  }
-  
-  // Pass to next error handler
-  next(err)
-})
-
-/**
- * ============================================================
- * DATABASE CONNECTION
- * ============================================================
- * Connects to MongoDB Atlas with proper timeouts
- */
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 30000,  // 30 second timeout for server selection
-  socketTimeoutMS: 45000,            // 45 second timeout for socket operations
-  retryWrites: true,
-  w: 'majority'
-})
-  .then(() => {
-    console.log('✅ MongoDB Connected')
-    console.log(`   Database: ${process.env.MONGO_URI.split('/').pop().split('?')[0]}`)
-  })
-  .catch(err => {
-    console.error('❌ DB Connection Error:', err.message)
-    process.exit(1)  // Exit process if can't connect to DB
-  })
-
-/**
- * ============================================================
- * HEALTH CHECK ENDPOINT
- * ============================================================
- * Simple endpoint to verify backend is running
- */
+// ✅ Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -180,114 +57,70 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-/**
- * ============================================================
- * ROOT ENDPOINT
- * ============================================================
- * Basic info when accessing root path
- */
+// Root
 app.get('/', (req, res) => {
   res.json({
     name: 'GenByte API',
     version: '1.0.0',
     status: 'Running',
-    endpoints: {
-      auth: '/api/auth',
-      subjects: '/api/subjects',
-      users: '/api/users',
-      health: '/api/health'
-    }
+    endpoints: { auth: '/api/auth', subjects: '/api/subjects', users: '/api/users', health: '/api/health' }
   })
 })
 
-/**
- * ============================================================
- * ERROR HANDLING MIDDLEWARE
- * ============================================================
- * Catches all errors and sends proper JSON responses
- */
+// Routes
+app.use('/api/auth', require('./routes/auth'))
+app.use('/api/subjects', require('./routes/subjects'))
+app.use('/api/users', require('./routes/users'))
+
+// ✅ Error handler — لازم يجي قبل الـ 404
 app.use((err, req, res, next) => {
+  // Multer errors
+  if (err.name === 'MulterError') {
+    if (err.code === 'FILE_TOO_LARGE') return res.status(413).json({ msg: 'File too large (max 100MB)' })
+    if (err.code === 'LIMIT_FILE_COUNT') return res.status(400).json({ msg: 'Too many files' })
+    return res.status(400).json({ msg: 'File upload error: ' + err.message })
+  }
+  if (err.message?.includes('not allowed')) return res.status(400).json({ msg: err.message })
+  if (err.message?.includes('Cloudinary')) return res.status(500).json({ msg: 'Cloud storage error: ' + err.message })
+
   const statusCode = err.status || err.statusCode || 500
-  const message = err.message || 'Internal Server Error'
-  
-  console.error(`❌ [${new Date().toISOString()}] Error:`)
-  console.error(`   Status: ${statusCode}`)
-  console.error(`   Message: ${message}`)
-  console.error(`   Path: ${req.path}`)
-  
-  // Send error response
+  console.error(`❌ Error [${statusCode}]: ${err.message}`)
   res.status(statusCode).json({
     success: false,
-    msg: message,
-    status: statusCode,
+    msg: err.message || 'Internal Server Error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   })
 })
 
-/**
- * ============================================================
- * 404 HANDLER
- * ============================================================
- * Catches requests to undefined routes
- */
+// ✅ 404 — لازم يجي آخر حاجة
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    msg: `Route not found: ${req.method} ${req.path}`,
-    status: 404
-  })
+  res.status(404).json({ success: false, msg: `Route not found: ${req.method} ${req.path}` })
 })
 
-/**
- * ============================================================
- * SERVER STARTUP
- * ============================================================
- * Start listening on the specified port
- */
+// Database
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  retryWrites: true,
+  w: 'majority'
+})
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => { console.error('❌ DB Error:', err.message); process.exit(1) })
+
+// Start server
 const PORT = process.env.PORT || 5000
-
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`
-╔════════════════════════════════════════╗
-║   GenByte Backend Server Started       ║
-╠════════════════════════════════════════╣
-║   🚀 Server: http://localhost:${PORT}${' '.repeat(9-PORT.toString().length)}║
-║   📦 Environment: Production           ║
-║   🔐 CORS Enabled for:                 ║
-║      • https://genbyte-five.vercel.app║
-║      • http://localhost:5173           ║
-║      • http://localhost:5174           ║
-╚════════════════════════════════════════╝
-  `)
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 GenByte backend running on port ${PORT}`)
 })
 
-/**
- * ============================================================
- * GRACEFUL SHUTDOWN
- * ============================================================
- * Handle termination signals properly
- */
-process.on('SIGTERM', () => {
-  console.log('⚠️  SIGTERM signal received: closing HTTP server')
+// Graceful shutdown
+const shutdown = (signal) => {
+  console.log(`⚠️ ${signal} received`)
   server.close(() => {
-    console.log('✅ HTTP server closed')
-    mongoose.connection.close(false, () => {
-      console.log('✅ MongoDB connection closed')
-      process.exit(0)
-    })
+    mongoose.connection.close(false, () => process.exit(0))
   })
-})
-
-process.on('SIGINT', () => {
-  console.log('⚠️  SIGINT signal received: closing HTTP server')
-  server.close(() => {
-    console.log('✅ HTTP server closed')
-    mongoose.connection.close(false, () => {
-      console.log('✅ MongoDB connection closed')
-      process.exit(0)
-    })
-  })
-})
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
 
 module.exports = app
-
