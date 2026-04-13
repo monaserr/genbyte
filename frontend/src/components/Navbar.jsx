@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -24,7 +25,9 @@ export default function Navbar({ onMenuClick, isAdmin = false }) {
     border: '1px solid var(--border)',
     borderRadius: 10,
     width: 36, height: 36,
+    minWidth: 36,
     cursor: 'pointer',
+    flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'all .2s ease',
     backdropFilter: 'blur(10px)',
@@ -35,17 +38,21 @@ export default function Navbar({ onMenuClick, isAdmin = false }) {
     <nav style={{
       position: 'fixed', top: 12, left: '50%',
       transform: 'translateX(-50%)',
-      width: 'calc(100% - 48px)', maxWidth: 1200,
-      zIndex: 300, padding: '.7rem 1.25rem',
+      width: 'calc(100% - 24px)', maxWidth: 1200,
+      zIndex: 300, padding: '.65rem 1rem',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: '.5rem',
       background: 'var(--nav-bg)',
       backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       borderRadius: 16,
       border: '1px solid var(--nav-border)',
       fontFamily: 'Inter, system-ui, sans-serif',
       boxShadow: 'var(--shadow-lg)',
+      boxSizing: 'border-box',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+
+      {/* Left side */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', minWidth: 0, flex: 1, overflow: 'hidden' }}>
         <button
           onClick={onMenuClick}
           style={{ ...btnStyle, flexDirection: 'column', gap: 4 }}
@@ -56,13 +63,22 @@ export default function Navbar({ onMenuClick, isAdmin = false }) {
             <span key={i} style={{ display: 'block', width: 16, height: 2, background: 'var(--accent)', borderRadius: 1 }} />
           ))}
         </button>
-        <Logo size={32} />
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', letterSpacing: '-.02em' }}>GenByte</div>
-          <div style={{ fontSize: '.6rem', color: 'var(--muted)' }}>
+
+        <Logo size={30} />
+
+        <div style={{ minWidth: 0, flexShrink: 1 }}>
+          <div style={{
+            fontWeight: 700, fontSize: '1rem', color: 'var(--text)',
+            letterSpacing: '-.02em', whiteSpace: 'nowrap',
+            overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            GenByte
+          </div>
+          <div style={{ fontSize: '.6rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
             <b style={{ color: 'var(--accent)' }}>Nasser</b> & <b style={{ color: 'var(--accent)' }}>3laa</b>
           </div>
         </div>
+
         {isAdmin && (
           <span style={{
             background: 'linear-gradient(135deg, var(--accent2), var(--accent))',
@@ -70,14 +86,17 @@ export default function Navbar({ onMenuClick, isAdmin = false }) {
             fontSize: '.65rem', fontWeight: 700,
             padding: '.25rem .65rem', borderRadius: 99,
             boxShadow: '0 4px 12px rgba(243,159,90,.3)',
-            letterSpacing: '.05em'
+            letterSpacing: '.05em',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}>
             ADMIN
           </span>
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem' }}>
+      {/* Right side */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
         <button
           onClick={toggleTheme}
           style={{ ...btnStyle, fontSize: '1rem' }}
@@ -87,26 +106,30 @@ export default function Navbar({ onMenuClick, isAdmin = false }) {
         >
           {dark ? '☀️' : '🌙'}
         </button>
+
         <span style={{
           fontSize: '.85rem', fontWeight: 500,
           color: 'var(--text)', opacity: 0.8,
-          maxWidth: 100, overflow: 'hidden',
-          textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+          maxWidth: 90, overflow: 'hidden',
+          textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          display: 'var(--username-display, inline)',
         }}>
           {user?.name || 'Guest'}
         </span>
+
         <div
           onClick={handleLogout}
           title="Sign Out"
           style={{
-            width: 36, height: 36, borderRadius: '50%',
+            width: 36, height: 36, minWidth: 36, borderRadius: '50%',
             background: 'linear-gradient(135deg, var(--accent2), var(--accent))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '.75rem', fontWeight: 700,
             color: '#fff', cursor: 'pointer',
             border: '2px solid var(--border)',
             transition: 'all .2s ease',
-            boxShadow: '0 4px 12px rgba(243,159,90,.3)'
+            boxShadow: '0 4px 12px rgba(243,159,90,.3)',
+            flexShrink: 0,
           }}
           onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}

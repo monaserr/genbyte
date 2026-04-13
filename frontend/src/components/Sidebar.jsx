@@ -1,11 +1,56 @@
+import { useState, useEffect } from 'react'
+
 export default function Sidebar({ items, active, onSelect, isOpen, isAdmin = false }) {
+  // ✅ بيتابع تغيير الـ theme بشكل ديناميكي
+  const [isDark, setIsDark] = useState(
+    document.documentElement.getAttribute('data-theme') !== 'light'
+  )
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light')
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
+
+  // ✅ 2 & 3: ألوان القايمة
+  // دارك: باك أخضر + خط أبيض
+  // لايت: باك أزرق فاتح + خط أبيض
+  const sidebarBg = isDark
+    ? 'rgba(10,60,20,.80)'
+    : 'rgba(30,100,220,.15)'
+
+  const sidebarBorder = isDark
+    ? 'rgba(50,180,80,.35)'
+    : 'rgba(30,100,220,.25)'
+
+  const itemActiveBg = isDark
+    ? 'rgba(30,140,60,.60)'
+    : 'rgba(30,100,220,.75)'
+
+  const itemActiveBorder = isDark
+    ? 'rgba(60,200,90,.5)'
+    : 'rgba(30,100,220,.5)'
+
+  const itemHoverBg = isDark
+    ? 'rgba(20,100,40,.45)'
+    : 'rgba(30,100,220,.35)'
+
+  // ✅ 1: كل النصوص في اللايت أسود — ما عدا الـ active اللي خطه أبيض
+  // ✅ 2 & 3: نص الـ active أبيض في الاتنين
+  const itemActiveColor  = '#ffffff'
+  const itemNormalColor  = isDark ? 'rgba(255,255,255,.7)' : '#000000'
+  const itemHoverColor   = isDark ? '#ffffff' : '#ffffff'
+  const sectionColor     = isDark ? 'rgba(255,255,255,.4)' : '#000000'
+
   return (
     <>
-      {/* OVERLAY للموبايل */}
+      {/* OVERLAY موبايل */}
       {isOpen && (
         <div
           onClick={() => onSelect(active)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 199, backdropFilter: 'blur(4px)' }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 199, backdropFilter: 'blur(4px)' }}
         />
       )}
 
@@ -20,8 +65,8 @@ export default function Sidebar({ items, active, onSelect, isOpen, isAdmin = fal
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        background: 'rgba(7,8,15,.4)',
-        borderRight: '1px solid rgba(255,255,255,.08)',
+        background: sidebarBg,
+        borderRight: `1px solid ${sidebarBorder}`,
         backdropFilter: 'blur(30px)',
         WebkitBackdropFilter: 'blur(30px)',
         zIndex: 200,
@@ -31,11 +76,21 @@ export default function Sidebar({ items, active, onSelect, isOpen, isAdmin = fal
       }}>
         {items.map((item, i) => {
           if (item.type === 'section') return (
-            <div key={i} style={{ fontSize: '.62rem', fontWeight: 700, color: 'rgba(255,255,255,.32)', letterSpacing: '.1em', textTransform: 'uppercase', padding: '.7rem .75rem .4rem', marginTop: '.4rem' }}>
+            <div key={i} style={{
+              fontSize: '.62rem',
+              fontWeight: 700,
+              color: sectionColor,
+              letterSpacing: '.1em',
+              textTransform: 'uppercase',
+              padding: '.7rem .75rem .4rem',
+              marginTop: '.4rem'
+            }}>
               {item.label}
             </div>
           )
           if (item.type === 'spacer') return <div key={i} style={{ flex: 1 }} />
+
+          const isActive = active === item.id
           return (
             <button
               key={i}
@@ -48,38 +103,37 @@ export default function Sidebar({ items, active, onSelect, isOpen, isAdmin = fal
                 borderRadius: 11,
                 cursor: 'pointer',
                 fontSize: '.84rem',
-                color: active === item.id ? (isAdmin ? '#a855f7' : '#818cf8') : 'rgba(255,255,255,.5)',
-                border: active === item.id ? `1.5px solid ${isAdmin ? 'rgba(168,85,247,.3)' : 'rgba(129,140,248,.3)'}` : '1px solid transparent',
-                background: active === item.id ? (isAdmin ? 'rgba(124,58,237,.15)' : 'rgba(129,140,248,.12)') : 'rgba(255,255,255,.04)',
+                color: isActive ? itemActiveColor : itemNormalColor,
+                border: isActive ? `1.5px solid ${itemActiveBorder}` : '1px solid transparent',
+                background: isActive ? itemActiveBg : 'transparent',
                 width: '100%',
                 textAlign: 'left',
-                fontWeight: active === item.id ? 600 : 500,
+                fontWeight: isActive ? 600 : 500,
                 fontFamily: 'inherit',
                 transition: 'all .2s ease',
-                backdropFilter: 'blur(10px)',
               }}
               onMouseEnter={e => {
-                if (active !== item.id) {
-                  e.target.style.background = 'rgba(255,255,255,.08)'
-                  e.target.style.color = 'rgba(255,255,255,.7)'
+                if (!isActive) {
+                  e.currentTarget.style.background = itemHoverBg
+                  e.currentTarget.style.color = itemHoverColor
                 }
               }}
               onMouseLeave={e => {
-                if (active !== item.id) {
-                  e.target.style.background = 'rgba(255,255,255,.04)'
-                  e.target.style.color = 'rgba(255,255,255,.5)'
+                if (!isActive) {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = itemNormalColor
                 }
               }}
             >
               <span style={{ fontSize: '.95rem', width: 18, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{ 
-                  background: item.badgeColor || '#f87171', 
-                  color: '#fff', 
-                  fontSize: '.6rem', 
-                  borderRadius: 99, 
-                  padding: '.12rem .45rem', 
+                <span style={{
+                  background: item.badgeColor || '#f87171',
+                  color: '#fff',
+                  fontSize: '.6rem',
+                  borderRadius: 99,
+                  padding: '.12rem .45rem',
                   fontWeight: 700,
                   flexShrink: 0
                 }}>
